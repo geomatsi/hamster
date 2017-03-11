@@ -43,6 +43,7 @@ deps: libopencm3 libnrf24 nanopb
 APP_SRCS :=		\
 	main.c		\
 	delay.c		\
+	radio.c		\
 	printf.c	\
 	stdlib.c	\
 	pb_common.c	\
