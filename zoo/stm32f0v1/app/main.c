@@ -17,8 +17,6 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/spi.h>
 
 #include <RF24.h>
 
@@ -38,6 +36,7 @@ extern void *memset(void *s, int c, size_t n);
 /* */
 
 struct rf24 *radio_init(void);
+void stdout_init(void);
 
 /* */
 
@@ -76,42 +75,6 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 /* */
 
-int putchar(int c)
-{
-	uint8_t ch = (uint8_t)c;
-	usart_send_blocking(USART1, ch);
-	return 0;
-}
-
-static void usart_setup(void)
-{
-	/* setup USART1 parameters */
-	usart_set_baudrate(USART1, 115200);
-	usart_set_databits(USART1, 8);
-	usart_set_parity(USART1, USART_PARITY_NONE);
-	usart_set_stopbits(USART1, USART_CR2_STOP_1_0BIT);
-	usart_set_mode(USART1, USART_MODE_TX);
-	usart_set_flow_control(USART1, USART_FLOWCONTROL_NONE);
-
-	/* enable USART1 */
-	usart_enable(USART1);
-}
-
-static void rcc_setup(void)
-{
-	rcc_periph_clock_enable(RCC_USART1);
-	rcc_periph_clock_enable(RCC_GPIOA);
-}
-
-static void pinmux_setup(void)
-{
-	/* USART1 pins */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO10);
-	gpio_set_af(GPIOA, GPIO_AF1, GPIO9 | GPIO10);
-}
-
-/* */
-
 int main(void)
 {
 	uint32_t node_id = 2001;
@@ -127,11 +90,8 @@ int main(void)
 
 	rcc_clock_setup_in_hsi_out_48mhz();
 
-	rcc_setup();
-	pinmux_setup();
-	usart_setup();
-
 	delay_init();
+	stdout_init();
 	nrf = radio_init();
 
 	printf("start xmit cycle...\r\n");

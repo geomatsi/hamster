@@ -44,6 +44,7 @@ APP_SRCS :=		\
 	main.c		\
 	delay.c		\
 	radio.c		\
+	stdout.c	\
 	printf.c	\
 	stdlib.c	\
 	pb_common.c	\
