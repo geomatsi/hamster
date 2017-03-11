@@ -45,6 +45,9 @@ APP_SRCS :=		\
 	delay.c		\
 	radio.c		\
 	stdout.c	\
+	w1.c		\
+	w1core.c	\
+	ds18b20.c	\
 	printf.c	\
 	stdlib.c	\
 	pb_common.c	\
@@ -64,6 +67,7 @@ CFLAGS  = $(PFLAGS) -Wall -Werror -Os -DSTM32F0 -DPB_BUFFER_ONLY
 CFLAGS += $(LIBCM3_INC) $(LIBNRF24_INC) $(NANOPB_INC)
 CFLAGS += -I$(PRJ_DIR)/include
 CFLAGS += -I$(OBJ_DIR)/nanopb
+CFLAGS += -I$(PRJ_DIR)/zoo/$(PLAT)/app
 
 LIBS = $(LIBCM3) $(LIBNRF24)
 

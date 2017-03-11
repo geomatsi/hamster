@@ -37,12 +37,15 @@ extern void *memset(void *s, int c, size_t n);
 
 struct rf24 *radio_init(void);
 void stdout_init(void);
+void w1_temp_init(void);
+int w1_temp_read(void);
 
 /* */
 
 #define PB_LIST_LEN 2
 
 static uint32_t count = 0;
+static int32_t temp = 0;
 
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
@@ -50,8 +53,8 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	uint32_t idx;
 
-	data[0] = (uint32_t)0xdeadbeef;
-	data[1] = (uint32_t)count;
+	data[0] = (uint32_t)count;
+	data[1] = (uint32_t)temp;
 
 	/* encode  sensor_data */
 
@@ -92,10 +95,18 @@ int main(void)
 
 	delay_init();
 	stdout_init();
+	w1_temp_init();
+
 	nrf = radio_init();
 
 	printf("start xmit cycle...\r\n");
 	while (1) {
+
+		/* read sensors */
+
+		temp = w1_temp_read();
+
+		/* send data */
 
 		printf("pkt #%u\n", (unsigned int)++count);
 		memset(buf, 0x0, sizeof(buf));
@@ -125,7 +136,7 @@ int main(void)
 			printf("written %d bytes\n", pb_len);
 		}
 
-		delay_ms(5000);
+		delay_ms(1000);
 	}
 
 	return 0;
