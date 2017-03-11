@@ -45,6 +45,7 @@ APP_SRCS :=		\
 	delay.c		\
 	radio.c		\
 	stdout.c	\
+	adc.c		\
 	w1.c		\
 	w1core.c	\
 	ds18b20.c	\

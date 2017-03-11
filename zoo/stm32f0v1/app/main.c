@@ -39,13 +39,17 @@ struct rf24 *radio_init(void);
 void stdout_init(void);
 void w1_temp_init(void);
 int w1_temp_read(void);
+void adc_volt_init(void);
+void adc_volt_read(int *va, int *vb);
 
 /* */
 
-#define PB_LIST_LEN 2
+#define PB_LIST_LEN 4
 
 static uint32_t count = 0;
-static int32_t temp = 0;
+static int temp = 0;
+static int va = 0;
+static int vb = 0;
 
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
@@ -55,6 +59,8 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 	data[0] = (uint32_t)count;
 	data[1] = (uint32_t)temp;
+	data[2] = (uint32_t)va;
+	data[3] = (uint32_t)vb;
 
 	/* encode  sensor_data */
 
@@ -96,6 +102,7 @@ int main(void)
 	delay_init();
 	stdout_init();
 	w1_temp_init();
+	adc_volt_init();
 
 	nrf = radio_init();
 
@@ -105,6 +112,9 @@ int main(void)
 		/* read sensors */
 
 		temp = w1_temp_read();
+		adc_volt_read(&va, &vb);
+
+		printf("t[%d] va[%d] vb[%d]\n", temp, va, vb);
 
 		/* send data */
 
