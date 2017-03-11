@@ -22,7 +22,8 @@ OBJSIZE	= $(CROSS_COMPILE)-size
 
 ## paths
 
-VPATH += $(TOP_DIR)/nanopb
+VPATH += $(NANOPB_DIR)
+
 VPATH += $(PRJ_DIR)/common
 VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
 VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
@@ -93,7 +94,7 @@ $(OBJ_DIR)/%.o: %.s $(OBJ_DIR)/msg.pb.h
 $(OBJ_DIR)/%.pb.c $(OBJ_DIR)/%.pb.h: $(PROTOBUF_SRC)/%.proto
 	mkdir -p $(OBJ_DIR)/nanopb
 	$(PROTOC) --proto_path=$(PROTOBUF_SRC) -o $(OBJ_DIR)/$*.pb $(PROTOBUF_SRC)/$*.proto
-	python $(TOP_DIR)/nanopb/generator/nanopb_generator.py $(OBJ_DIR)/$*.pb
+	python $(NANOPB_DIR)/generator/nanopb_generator.py $(OBJ_DIR)/$*.pb
 	# FIXME: why msg.pb.h is removed unless stored in another directory ?
 	mv $(OBJ_DIR)/msg.pb.h $(OBJ_DIR)/nanopb
 ## platform-specific flash rules
