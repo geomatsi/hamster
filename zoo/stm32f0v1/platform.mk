@@ -25,7 +25,7 @@ OBJSIZE	= $(CROSS_COMPILE)-size
 VPATH += $(NANOPB_DIR)
 
 VPATH += $(PRJ_DIR)/common
-VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
+VPATH += $(PRJ_DIR)/drivers/w1
 VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
 
 ## platform dependencies
@@ -42,7 +42,7 @@ deps: libopencm3 libnrf24 nanopb
 
 APP_SRCS :=		\
 	main.c		\
-	clock.c		\
+	delay.c		\
 	printf.c	\
 	stdlib.c	\
 	pb_common.c	\
@@ -97,7 +97,8 @@ $(OBJ_DIR)/%.pb.c $(OBJ_DIR)/%.pb.h: $(PROTOBUF_SRC)/%.proto
 	python $(NANOPB_DIR)/generator/nanopb_generator.py $(OBJ_DIR)/$*.pb
 	# FIXME: why msg.pb.h is removed unless stored in another directory ?
 	mv $(OBJ_DIR)/msg.pb.h $(OBJ_DIR)/nanopb
-## platform-specific flash rules
+
+## platform-specific loader rules
 
 upload:
 	openocd -f $(PRJ_DIR)/zoo/$(PLAT)/scripts/openocd-jlink-swd.cfg -c 'program ()'

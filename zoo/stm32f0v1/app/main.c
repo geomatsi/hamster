@@ -28,14 +28,14 @@
 #include "pb_decode.h"
 #include "msg.pb.h"
 
-#include "clock.h"
 #include "delay.h"
 
 /* FIXME: create tinylib and its header for this stuff */
+
 #define size_t  unsigned int
 extern int sprintf(char *out, const char *format, ...);
 extern int printf(const char *format, ...);
-extern void * memset(void *s, int c, size_t n);
+extern void *memset(void *s, int c, size_t n);
 
 /* */
 
@@ -169,16 +169,6 @@ struct rf24 nrf24_ops = {
 	.spi_xfer = f_spi_xfer,
 };
 
-void delay_us(int delay)
-{
-	/*
-	 * This function is needed by libnrf24: 10us, 130us, 1500us delays.
-	 * However libnrf24 is not very demanding to those timings.
-	 * That is why this workaround: wait a little longer...
-	 */
-	delay_ms(1);
-}
-
 /* */
 
 int main(void)
@@ -197,7 +187,8 @@ int main(void)
 	enum rf24_tx_status ret;
 
 	rcc_clock_setup_in_hsi_out_48mhz();
-	systick_setup_mhz(48);
+
+	delay_init();
 
 	rcc_setup();
 	pinmux_setup();

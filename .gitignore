@@ -1,0 +1,7 @@
+
+
+# vim swp files
+.*.swp
+
+# output directory
+out
