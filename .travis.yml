@@ -1,0 +1,25 @@
+language: c
+
+before_install:
+# pull git submodules
+- git submodule update --init --recursive
+
+# setup toolchains
+- sudo apt-add-repository 'deb http://archive.ubuntu.com/ubuntu trusty main universe multiverse restricted'
+- sudo apt-get update -qq
+- sudo apt-get install -y gcc-arm-none-eabi
+- sudo apt-get install -y gcc-avr binutils-avr avr-libc
+- sudo apt-get install -y protobuf-c-compiler libprotobuf-c-dev libprotobuf-dev
+
+script:
+# stm32f0v1 board
+- make ARCH=arm PLAT=stm32f0v1 deps
+- make ARCH=arm PLAT=stm32f0v1 app
+- make ARCH=arm PLAT=stm32f0v1 distclean
+
+# attiny85v1 board
+- make ARCH=avr PLAT=attiny85v1 deps
+- make ARCH=avr PLAT=attiny85v1 app
+- make ARCH=avr PLAT=attiny85v1 distclean
+
+install: true
