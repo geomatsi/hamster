@@ -4,8 +4,13 @@
 
 ## supported platform
 
+# stm32f0v1
 ARCH	= arm
 PLAT	= stm32f0v1
+
+# attiny85v1
+#ARCH	= avr
+#PLAT	= attiny85v1
 
 # project and output directories
 
