@@ -2,7 +2,7 @@
 # platform description:
 #   - arch: arm cortex-m0
 #   - chip: stm32f030f4p6
-#   - board: stm32f030f4p6 v1 board
+#   - board: stm32f030f4p6 v1
 #   - description: stm32 sensor node v1
 #
 
@@ -30,8 +30,10 @@ VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
 
 ## platform dependencies
 
-LIBCM3_TARGET	= stm32/f0
-LIBCM3_FPFLAGS	= -msoft-float
+CM3_TARGET	= stm32/f0
+CM3_FPFLAGS	= -msoft-float
+
+NRF24_PLT_FLAGS = $(APP_PLT_FLAGS)
 
 PROTOC ?= protoc
 PROTOBUF_SRC = $(PRJ_DIR)/zoo/$(PLAT)/app/protobuf
@@ -58,24 +60,29 @@ APP_SRCS :=		\
 APP_OBJS := $(APP_SRCS:.c=.o)
 APP_OBJS := $(addprefix $(OBJ_DIR)/,$(APP_OBJS))
 
-PFLAGS = \
+APP_PLT_FLAGS = \
 	-mthumb			\
 	-mcpu=cortex-m0		\
 	-msoft-float		\
 	-ffunction-sections	\
 
-CFLAGS  = $(PFLAGS) -Wall -Werror -Os -DSTM32F0 -DPB_BUFFER_ONLY
-CFLAGS += $(LIBCM3_INC) $(LIBNRF24_INC) $(NANOPB_INC)
+CFLAGS  = $(APP_PLT_FLAGS)
+CFLAGS += -Wall -Werror -Os -DSTM32F0
+
+# tweak nanopb size
+CFLAGS += -DPB_BUFFER_ONLY
+
+CFLAGS += $(CM3_INC) $(NRF24_INC) $(NANOPB_INC)
 CFLAGS += -I$(PRJ_DIR)/include
 CFLAGS += -I$(OBJ_DIR)/nanopb
 CFLAGS += -I$(PRJ_DIR)/zoo/$(PLAT)/app
 
-LIBS = $(LIBCM3) $(LIBNRF24)
+LIBS = $(CM3_LIB) $(NRF24_LIB)
 
 LDSCRIPT = $(PRJ_DIR)/ld/$(PLAT).ld
-LDFLAGS =  $(PFLAGS) -nostartfiles -T$(LDSCRIPT) -Wl,--gc-sections
+LDFLAGS =  $(APP_PLT_FLAGS) -nostartfiles -T$(LDSCRIPT) -Wl,--gc-sections
 
-## rules
+## build rules
 
 app: $(OBJ_DIR)/$(APP).bin
 	cp $(OBJ_DIR)/$(APP).bin $(OBJ_DIR)/test.bin
@@ -88,7 +95,7 @@ app: $(OBJ_DIR)/$(APP).bin
 	$(OBJCOPY) -O binary $^ $@
 
 $(OBJ_DIR)/$(APP).elf: $(APP_OBJS) $(LIBS) $(LDSCRIPT)
-	$(CC) $(LDFLAGS) $(APP_OBJS) $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(APP_OBJS) $(LIBS) -o $@
 
 $(OBJ_DIR)/%.o: %.c $(OBJ_DIR)/msg.pb.h
 	mkdir -p $(dir $@)
