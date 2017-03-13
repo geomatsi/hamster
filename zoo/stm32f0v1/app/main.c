@@ -37,16 +37,25 @@ extern void *memset(void *s, int c, size_t n);
 
 struct rf24 *radio_init(void);
 void stdout_init(void);
+
 void w1_temp_init(void);
 int w1_temp_read(void);
+
 void adc_volt_init(void);
 void adc_volt_read(int *va, int *vb);
+
+void hc_sr04_init(uint32_t freq);
+void hc_sr04_setup_echo_capture(void);
+int hc_sr04_wait_for_echo(void);
+void hc_sr04_trigger_pulse(void);
+uint32_t hc_sr04_get_range(void);
 
 /* */
 
 #define PB_LIST_LEN 4
 
 static uint32_t count = 0;
+static uint32_t range = 0;
 static int temp = 0;
 static int va = 0;
 static int vb = 0;
@@ -57,7 +66,8 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	uint32_t idx;
 
-	data[0] = (uint32_t)count;
+	//data[0] = (uint32_t)count;
+	data[0] = (uint32_t)range;
 	data[1] = (uint32_t)temp;
 	data[2] = (uint32_t)va;
 	data[3] = (uint32_t)vb;
@@ -103,6 +113,7 @@ int main(void)
 	stdout_init();
 	w1_temp_init();
 	adc_volt_init();
+	hc_sr04_init(48 /* MHz */);
 
 	nrf = radio_init();
 
@@ -111,10 +122,26 @@ int main(void)
 
 		/* read sensors */
 
+		/* temperature: ds18b20 */
 		temp = w1_temp_read();
+
+		/* VBAT and light: stm32f0 ADC */
 		adc_volt_read(&va, &vb);
 
-		printf("t[%d] va[%d] vb[%d]\n", temp, va, vb);
+		/* range: hc-sr04 */
+		hc_sr04_setup_echo_capture();
+		hc_sr04_trigger_pulse();
+
+		ret = hc_sr04_wait_for_echo();
+		if (ret) {
+			/* TODO: reset hc_sr04 */
+			range = 0xffff;
+		} else {
+			range = hc_sr04_get_range();
+		}
+
+		printf("t[%d] va[%d] vb[%d] r[%u]\n",
+			temp, va, vb, (unsigned int)range);
 
 		/* send data */
 
