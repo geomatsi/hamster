@@ -1,0 +1,2 @@
+X(RI)		X(SCK)		X(MISO)
+X(GND)		X(MOSI)		X(VCC)

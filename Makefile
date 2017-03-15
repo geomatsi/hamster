@@ -12,6 +12,10 @@ PLAT	= stm32f0v1
 #ARCH	= avr
 #PLAT	= attiny85v1
 
+# devduino2
+#ARCH	= avr
+#PLAT	= devduino2
+
 # project and output directories
 
 PRJ_DIR = $(shell pwd)
