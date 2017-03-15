@@ -22,4 +22,9 @@ script:
 - make ARCH=avr PLAT=attiny85v1 app
 - make ARCH=avr PLAT=attiny85v1 distclean
 
+# devduino2 board
+- make ARCH=avr PLAT=devduino2 deps
+- make ARCH=avr PLAT=devduino2 app
+- make ARCH=avr PLAT=devduino2 distclean
+
 install: true
