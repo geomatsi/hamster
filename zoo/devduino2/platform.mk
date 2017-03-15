@@ -21,17 +21,12 @@ OBJDUMP	= $(CROSS_COMPILE)-objdump
 
 ## paths
 
-VPATH += $(NANOPB_DIR)
-
 VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
 
 ## platform dependencies
 
 NRF24_CFG_FLAGS = -DNRF24_LOG_LEVEL=2 -DCONFIG_LIB_RF24_SIZEOPT
 NRF24_PLT_FLAGS = $(APP_PLT_FLAGS)
-
-PROTOC ?= protoc
-PROTOBUF_SRC = $(PRJ_DIR)/zoo/$(PLAT)/app/protobuf
 
 deps: libnrf24 nanopb
 

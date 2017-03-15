@@ -35,6 +35,10 @@ info:
 
 include $(DEP_DIR)/deps.mk
 
+## protobuf
+
+include $(PRJ_DIR)/proto/proto.mk
+
 ## platforms
 
 include $(PRJ_DIR)/zoo/$(PLAT)/platform.mk

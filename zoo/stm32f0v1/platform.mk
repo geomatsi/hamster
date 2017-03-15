@@ -22,8 +22,6 @@ OBJSIZE	= $(CROSS_COMPILE)-size
 
 ## paths
 
-VPATH += $(NANOPB_DIR)
-
 VPATH += $(PRJ_DIR)/common
 VPATH += $(PRJ_DIR)/drivers/w1
 VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
@@ -34,9 +32,6 @@ CM3_TARGET	= stm32/f0
 CM3_FPFLAGS	= -msoft-float
 
 NRF24_PLT_FLAGS = $(APP_PLT_FLAGS)
-
-PROTOC ?= protoc
-PROTOBUF_SRC = $(PRJ_DIR)/zoo/$(PLAT)/app/protobuf
 
 deps: libopencm3 libnrf24 nanopb
 
