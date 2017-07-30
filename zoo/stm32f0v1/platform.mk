@@ -32,6 +32,7 @@ CM3_TARGET	= stm32/f0
 CM3_FPFLAGS	= -msoft-float
 
 NRF24_PLT_FLAGS = $(APP_PLT_FLAGS)
+NRF24_CFG_FLAGS = -DSPI_SINGLE_BYTE
 
 deps: libopencm3 libnrf24 nanopb
 
