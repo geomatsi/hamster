@@ -61,6 +61,8 @@ uint8_t f_spi_xfer(uint8_t dat)
 /* */
 
 struct rf24 nrf = {
+	.delay_us = delay_us,
+	.delay_ms = delay_ms,
 	.csn = f_csn,
 	.ce = f_ce,
 	.spi_xfer = f_spi_xfer,

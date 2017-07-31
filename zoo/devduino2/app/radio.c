@@ -1,6 +1,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
+#include "delay.h"
 #include "spi.h"
 
 /* rf24 pins on devduino2 */
@@ -56,6 +57,8 @@ static uint8_t f_spi_xfer(uint8_t dat)
 }
 
 struct rf24 nrf = {
+	.delay_us = delay_us,
+	.delay_ms = delay_ms,
 	.csn = f_csn,
 	.ce = f_ce,
 	.spi_xfer = f_spi_xfer,
