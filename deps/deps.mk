@@ -33,7 +33,7 @@ libnrf24:
 libopencm3:
 	make -C $(CM3_DIR) \
 		PREFIX=$(CROSS_COMPILE) \
-		FP_FLAGS=$(CM3_FPFLAGS) \
+		FP_FLAGS="$(CM3_FPFLAGS)" \
 		TARGETS="$(CM3_TARGET)"
 
 nanopb:

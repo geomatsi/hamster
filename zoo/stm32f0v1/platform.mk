@@ -29,7 +29,9 @@ VPATH += $(PRJ_DIR)/zoo/$(PLAT)/app
 ## platform dependencies
 
 CM3_TARGET	= stm32/f0
-CM3_FPFLAGS	= -msoft-float
+
+# FIXME: commit std=c99 to libopencm3
+CM3_FPFLAGS	= -msoft-float -std=c99
 
 NRF24_PLT_FLAGS = $(APP_PLT_FLAGS)
 NRF24_CFG_FLAGS = -DSPI_SINGLE_BYTE
