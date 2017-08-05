@@ -96,7 +96,9 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 int main(void)
 {
-	uint32_t node_id = 2001;
+
+	uint32_t node_id = 1003;
+
 	struct rf24 *nrf;
 	uint8_t buf[32];
 

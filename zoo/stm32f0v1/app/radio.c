@@ -21,6 +21,7 @@
 
 #include <RF24.h>
 
+#include "hamster.h"
 #include "delay.h"
 
 /* */
@@ -95,7 +96,7 @@ struct rf24 nrf24_ops = {
 
 struct rf24 *radio_init(void)
 {
-	uint8_t addr[] = {'E', 'F', 'C', 'L', 'I'};
+	uint8_t addr[] = NRF_ADDR;
 	struct rf24 *nrf = &nrf24_ops;
 
 	/* configure stm32/f0 peripherals */
@@ -109,10 +110,10 @@ struct rf24 *radio_init(void)
 	/* configure RX settings */
 	rf24_enable_dyn_payload(nrf);
 	rf24_set_retries(nrf, 0xf /* retry delay 4000us */, 10 /* retries */);
-	rf24_set_channel(nrf, 10);
-	rf24_set_data_rate(nrf, RF24_RATE_250K);
-	rf24_set_crc_mode(nrf, RF24_CRC_16_BITS);
-	rf24_set_pa_level(nrf, RF24_PA_MIN);
+	rf24_set_channel(nrf, NRF_CHAN);
+	rf24_set_data_rate(nrf, NRF_RATE);
+	rf24_set_crc_mode(nrf, NRF_CRC);
+	rf24_set_pa_level(nrf, NRF_PA);
 
 	rf24_setup_ptx(nrf, addr);
 	rf24_start_ptx(nrf);

@@ -48,7 +48,7 @@ static void pinmux_init(void)
 	gpio_set_af(GPIOA, GPIO_AF1, GPIO9 | GPIO10);
 #endif
 
-#if 0
+#if 1
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO14);
 	gpio_set_af(GPIOA, GPIO_AF1, GPIO14);
 #endif

@@ -15,6 +15,7 @@
 #include "pb_decode.h"
 #include "msg.pb.h"
 
+#include "hamster.h"
 #include "adc.h"
 #include "radio.h"
 
@@ -160,18 +161,13 @@ uint32_t get_battery_voltage(void)
 
 int main (void)
 {
-	struct rf24 *nrf;
-	enum rf24_tx_status ret;
-
-#if 1
-	uint8_t addr[] = {'E', 'F', 'C', 'L', 'I'};
-	uint32_t node_id = 1003;
-#else
-	uint8_t addr[] = {'E', 'F', 'S', 'N', '1'};
-	uint32_t node_id = 1004;
-#endif
-
+	uint8_t addr[] = NRF_ADDR;
 	uint8_t buf[32];
+
+	uint32_t node_id = 1003;
+
+	enum rf24_tx_status ret;
+	struct rf24 *nrf;
 
 	node_sensor_list message = {};
 	pb_ostream_t stream;
@@ -192,10 +188,10 @@ int main (void)
 	rf24_enable_dyn_payload(nrf);
 	rf24_set_retries(nrf, 0xf /* retry delay 4000us */, 5 /* retries */);
 
-	rf24_set_channel(nrf, 10);
-	rf24_set_data_rate(nrf, RF24_RATE_250K);
-	rf24_set_crc_mode(nrf, RF24_CRC_16_BITS);
-	rf24_set_pa_level(nrf, RF24_PA_MAX);
+	rf24_set_channel(nrf, NRF_CHAN);
+	rf24_set_data_rate(nrf, NRF_RATE);
+	rf24_set_crc_mode(nrf, NRF_CRC);
+	rf24_set_pa_level(nrf, NRF_PA);
 
 	rf24_setup_ptx(nrf, addr);
 	rf24_start_ptx(nrf);
