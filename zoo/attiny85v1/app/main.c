@@ -161,10 +161,14 @@ uint32_t get_battery_voltage(void)
 
 int main (void)
 {
+#if defined(NODE_ID)
+	uint32_t node_id = NODE_ID;
+#else
+#error "NODE_ID is not defined"
+#endif
+
 	uint8_t addr[] = NRF_ADDR;
 	uint8_t buf[32];
-
-	uint32_t node_id = 1003;
 
 	enum rf24_tx_status ret;
 	struct rf24 *nrf;

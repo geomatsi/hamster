@@ -65,8 +65,15 @@ APP_PLT_FLAGS = \
 	-msoft-float		\
 	-ffunction-sections	\
 
-CFLAGS  = $(APP_PLT_FLAGS)
+CFLAGS = $(APP_PLT_FLAGS)
 CFLAGS += -Wall -Werror -Os -DSTM32F0
+
+# set sensor node ID
+ifneq (${NODE_ID},)
+CFLAGS += -DNODE_ID=${NODE_ID}
+else
+CFLAGS += -DNODE_ID=1234
+endif
 
 # tweak nanopb size
 CFLAGS += -DPB_BUFFER_ONLY

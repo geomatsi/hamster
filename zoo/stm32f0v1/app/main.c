@@ -97,7 +97,11 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 int main(void)
 {
 
-	uint32_t node_id = 1003;
+#if defined(NODE_ID)
+	uint32_t node_id = NODE_ID;
+#else
+#error "NODE_ID is not defined"
+#endif
 
 	struct rf24 *nrf;
 	uint8_t buf[32];
