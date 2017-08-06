@@ -58,17 +58,21 @@ uint32_t temp;
 static bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
 	sensor_data sensor = {};
+	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
 	uint32_t idx;
 
+	data[0] = SID_VOLT_MV;
 	data[0] = volt;
+
+	data[1] = SID_TEMP_C;
 	data[1] = temp;
 
 	/* encode sensor_data */
 
 	for (idx = 0; idx < PB_LIST_LEN; idx++) {
 
-		sensor.type = idx;
+		sensor.type = type[idx];
 		sensor.data = data[idx];
 
 		if (!pb_encode_tag_for_field(stream, field)) {

@@ -24,6 +24,7 @@
 #include "pb_decode.h"
 #include "msg.pb.h"
 
+#include "hamster.h"
 #include "delay.h"
 
 /* FIXME: create tinylib and its header for this stuff */
@@ -52,7 +53,7 @@ uint32_t hc_sr04_get_range(void);
 
 /* */
 
-#define PB_LIST_LEN 4
+#define PB_LIST_LEN	3
 
 static uint32_t count = 0;
 static uint32_t range = 0;
@@ -62,20 +63,24 @@ static int vb = 0;
 
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
+	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
 	sensor_data sensor = {};
 	uint32_t idx;
 
-	//data[0] = (uint32_t)count;
+	type[0] = (uint32_t)SID_RANGE_MM;
 	data[0] = (uint32_t)range;
+
+	type[1] = (uint32_t)SID_TEMP_C;
 	data[1] = (uint32_t)temp;
-	data[2] = (uint32_t)va;
-	data[3] = (uint32_t)vb;
+
+	type[2] = (uint32_t)SID_VOLT_MV;
+	data[2] = (uint32_t)vb;
 
 	/* encode  sensor_data */
 
 	for (idx = 0; idx < PB_LIST_LEN; idx++) {
-		sensor.type = idx;
+		sensor.type = type[idx];
 		sensor.data = data[idx];
 
 		if (!pb_encode_tag_for_field(stream, field)) {
