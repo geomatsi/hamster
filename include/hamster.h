@@ -17,4 +17,8 @@
 #define SID_RANGE_MM	20
 #define SID_VOLT_MV	30
 
+/* alert IDs */
+
+#define AID_WATER_LVL	1000
+
 #endif	/* HAMSTER_H_H */
