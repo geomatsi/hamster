@@ -66,20 +66,25 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
 	sensor_data sensor = {};
-	uint32_t idx;
+	int len = 0;
 
-	type[0] = (uint32_t)SID_RANGE_MM;
-	data[0] = (uint32_t)range;
+	if (va > 3000) {
+		type[len] = (uint32_t)AID_WATER_LVL;
+		data[len++] = (uint32_t)1;
+	} else {
+		type[len] = (uint32_t)SID_RANGE_MM;
+		data[len++] = (uint32_t)range;
 
-	type[1] = (uint32_t)SID_TEMP_C;
-	data[1] = (uint32_t)temp;
+		type[len] = (uint32_t)SID_TEMP_C;
+		data[len++] = (uint32_t)temp;
 
-	type[2] = (uint32_t)SID_VOLT_MV;
-	data[2] = (uint32_t)vb;
+		type[len] = (uint32_t)SID_VOLT_MV;
+		data[len++] = (uint32_t)vb;
+	}
 
 	/* encode  sensor_data */
 
-	for (idx = 0; idx < PB_LIST_LEN; idx++) {
+	for (int idx = 0; idx < len; idx++) {
 		sensor.type = type[idx];
 		sensor.data = data[idx];
 
