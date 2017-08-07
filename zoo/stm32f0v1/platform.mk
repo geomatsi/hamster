@@ -66,7 +66,7 @@ APP_PLT_FLAGS = \
 	-ffunction-sections	\
 
 CFLAGS = $(APP_PLT_FLAGS)
-CFLAGS += -Wall -Werror -Os -DSTM32F0
+CFLAGS += -std=c99 -Wall -Werror -Os -DSTM32F0
 
 # set sensor node ID
 ifneq (${NODE_ID},)
