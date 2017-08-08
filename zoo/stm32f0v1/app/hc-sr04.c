@@ -201,6 +201,11 @@ uint32_t hc_sr04_get_range(void)
 	return pulse / 58;
 }
 
+int hc_sr04_valid_range(uint32_t range)
+{
+	return ((0 <= range) && range <= 1000) ? 1 : 0;
+}
+
 void hc_sr04_init(uint32_t mhz)
 {
 	freq = mhz;

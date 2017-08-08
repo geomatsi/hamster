@@ -48,6 +48,7 @@ void adc_volt_read(int *va, int *vb);
 void hc_sr04_init(uint32_t freq);
 void hc_sr04_setup_echo_capture(void);
 void hc_sr04_trigger_pulse(void);
+int hc_sr04_valid_range(uint32_t range);
 uint32_t hc_sr04_get_range(void);
 
 /* */
@@ -71,14 +72,20 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 		type[len] = (uint32_t)AID_WATER_LVL;
 		data[len++] = (uint32_t)1;
 	} else {
-		type[len] = (uint32_t)SID_RANGE_MM;
-		data[len++] = (uint32_t)range;
-
 		type[len] = (uint32_t)SID_TEMP_C;
 		data[len++] = (uint32_t)temp;
 
 		type[len] = (uint32_t)SID_VOLT_MV;
 		data[len++] = (uint32_t)vb;
+
+		if (hc_sr04_valid_range(range)) {
+			type[len] = (uint32_t)SID_RANGE_MM;
+			data[len++] = (uint32_t)range;
+		} else {
+			/* report range sensor failure */
+			type[len] = (uint32_t)AID_NODE_ERR;
+			data[len++] = (uint32_t)SID_RANGE_MM;
+		}
 	}
 
 	/* encode  sensor_data */
