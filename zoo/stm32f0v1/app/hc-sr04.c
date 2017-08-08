@@ -168,18 +168,6 @@ void hc_sr04_setup_echo_capture()
 	pulse = 0;
 }
 
-int hc_sr04_wait_for_echo(void)
-{
-	volatile uint32_t timeout = 0;
-
-	while ((state == READY) || (state == RUNNING)) {
-		if (timeout++ == 0xfffff)
-			return 1;
-	}
-
-	return 0;
-}
-
 void hc_sr04_trigger_pulse(void)
 {
 	volatile int i;
@@ -196,6 +184,20 @@ void hc_sr04_trigger_pulse(void)
 
 uint32_t hc_sr04_get_range(void)
 {
+	volatile uint32_t timeout = 0;
+
+	while ((state == READY) || (state == RUNNING)) {
+		if (timeout++ == 0xfffff) {
+			/* TODO: reset hc_sr04 after failure */
+			return 0xffff;
+		}
+	}
+
+	if (state == ERROR) {
+		/* TODO: reset hc_sr04 after failure */
+		return 0xffff;
+	}
+
 	return pulse / 58;
 }
 

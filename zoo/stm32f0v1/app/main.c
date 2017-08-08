@@ -47,7 +47,6 @@ void adc_volt_read(int *va, int *vb);
 
 void hc_sr04_init(uint32_t freq);
 void hc_sr04_setup_echo_capture(void);
-int hc_sr04_wait_for_echo(void);
 void hc_sr04_trigger_pulse(void);
 uint32_t hc_sr04_get_range(void);
 
@@ -147,14 +146,7 @@ int main(void)
 		/* range: hc-sr04 */
 		hc_sr04_setup_echo_capture();
 		hc_sr04_trigger_pulse();
-
-		ret = hc_sr04_wait_for_echo();
-		if (ret) {
-			/* TODO: reset hc_sr04 */
-			range = 0xffff;
-		} else {
-			range = hc_sr04_get_range();
-		}
+		range = hc_sr04_get_range();
 
 		printf("t[%d] va[%d] vb[%d] r[%u]\n",
 			temp, va, vb, (unsigned int)range);
