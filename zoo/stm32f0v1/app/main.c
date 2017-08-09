@@ -51,6 +51,8 @@ void adc_volt_read(int *va, int *vb);
 #define PB_LIST_LEN	3
 
 static uint32_t count = 0;
+static uint8_t alert = 0;
+
 static uint32_t range = 0;
 static int temp = 0;
 static int va = 0;
@@ -63,9 +65,14 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	int len = 0;
 
-	if (va > 3000) {
-		type[len] = (uint32_t)AID_WATER_LVL;
-		data[len++] = (uint32_t)1;
+	/* Keep sending sensor reports even if alerts are active.
+	 * Report active alerts each second message.
+	 */
+	if (alert && (count & 1)) {
+		if (va > 3000) {
+			type[len] = (uint32_t)AID_WATER_LVL;
+			data[len++] = (uint32_t)1;
+		}
 	} else {
 		type[len] = (uint32_t)SID_TEMP_C(0);
 		data[len++] = (uint32_t)temp;
@@ -139,19 +146,28 @@ int main(void)
 
 		/* read sensors */
 
-		/* temperature: ds18b20 */
+		/* temperature: ds18b20 sensor */
 		temp = w1_temp_read();
 
-		/* VBAT and light: stm32f0 ADC */
+		/* VBAT and water level: ADC */
 		adc_volt_read(&va, &vb);
 
-		/* range: hc-sr04 */
+		/* range: hc-sr04 sensor */
 		hc_sr04_setup_echo_capture();
 		hc_sr04_trigger_pulse();
 		range = hc_sr04_get_range();
 
 		printf("t[%d] va[%d] vb[%d] r[%u]\n",
 			temp, va, vb, (unsigned int)range);
+
+		/* check alerts */
+
+		alert = 0;
+
+		if (va > 3000) {
+			printf("Active alert: AID_WATER_LVL\n");
+			alert++;
+		}
 
 		/* send data */
 
