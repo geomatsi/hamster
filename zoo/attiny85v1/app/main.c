@@ -62,10 +62,10 @@ static bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field
 	uint32_t data[PB_LIST_LEN];
 	uint32_t idx;
 
-	data[0] = SID_VOLT_MV;
+	data[0] = SID_VOLT_MV(0);
 	data[0] = volt;
 
-	data[1] = SID_TEMP_C;
+	data[1] = SID_TEMP_C(0);
 	data[1] = temp;
 
 	/* encode sensor_data */

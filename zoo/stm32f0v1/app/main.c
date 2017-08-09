@@ -67,19 +67,19 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 		type[len] = (uint32_t)AID_WATER_LVL;
 		data[len++] = (uint32_t)1;
 	} else {
-		type[len] = (uint32_t)SID_TEMP_C;
+		type[len] = (uint32_t)SID_TEMP_C(0);
 		data[len++] = (uint32_t)temp;
 
-		type[len] = (uint32_t)SID_VOLT_MV;
+		type[len] = (uint32_t)SID_VOLT_MV(0);
 		data[len++] = (uint32_t)vb;
 
 		if (hc_sr04_valid_range(range)) {
-			type[len] = (uint32_t)SID_RANGE_MM;
+			type[len] = (uint32_t)SID_RANGE_SM(0);
 			data[len++] = (uint32_t)range;
 		} else {
 			/* report range sensor failure */
 			type[len] = (uint32_t)AID_NODE_ERR;
-			data[len++] = (uint32_t)SID_RANGE_MM;
+			data[len++] = (uint32_t)SID_RANGE_SM(0);
 		}
 	}
 

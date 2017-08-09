@@ -82,10 +82,10 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	uint32_t idx;
 
-	type[0] = (uint32_t)SID_VOLT_MV;
+	type[0] = (uint32_t)SID_VOLT_MV(0);
 	data[0] = (uint32_t)read_vcc();
 
-	type[0] = (uint32_t)SID_TEMP_C;
+	type[0] = (uint32_t)SID_TEMP_C(0);
 	data[1] = (uint32_t)read_temp_mcp9700();
 
 	/* encode  sensor_data */

@@ -13,9 +13,11 @@
 
 /* sensor IDs */
 
-#define SID_TEMP_C	10
-#define SID_RANGE_MM	20
-#define SID_VOLT_MV	30
+#define SID_TEMP_C(i)	(0x10 + (i))
+#define SID_RANGE_SM(i)	(0x20 + (i))
+#define SID_VOLT_MV(i)	(0x30 + (i))
+
+#define SID_MASK	0xF
 
 /* alert IDs */
 
