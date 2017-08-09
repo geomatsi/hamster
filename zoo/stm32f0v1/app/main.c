@@ -28,6 +28,11 @@
 #include "hc-sr04.h"
 #include "delay.h"
 
+/* */
+
+#define VBAT_LOW_MV	6500
+#define WATER_HI_MV	3000
+
 /* FIXME: create tinylib and its header for this stuff */
 
 #define size_t  unsigned int
@@ -48,7 +53,7 @@ void adc_volt_read(int *va, int *vb);
 
 /* */
 
-#define PB_LIST_LEN	3
+#define PB_LIST_LEN	5
 
 static uint32_t count = 0;
 static uint8_t alert = 0;
@@ -69,10 +74,16 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	 * Report active alerts each second message.
 	 */
 	if (alert && (count & 1)) {
-		if (va > 3000) {
+		if (va > WATER_HI_MV) {
 			type[len] = (uint32_t)AID_WATER_LVL;
 			data[len++] = (uint32_t)1;
 		}
+
+		if (vb <  VBAT_LOW_MV) {
+			type[len] = (uint32_t)AID_VBAT_LOW;
+			data[len++] = (uint32_t)1;
+		}
+
 	} else {
 		type[len] = (uint32_t)SID_TEMP_C(0);
 		data[len++] = (uint32_t)temp;
@@ -149,23 +160,31 @@ int main(void)
 		/* temperature: ds18b20 sensor */
 		temp = w1_temp_read();
 
-		/* VBAT and water level: ADC */
+		/* VBAT and water level trigger: ADC */
 		adc_volt_read(&va, &vb);
+
+		/* VBAT = vb * 3 */
+		vb = vb * 3;
 
 		/* range: hc-sr04 sensor */
 		hc_sr04_setup_echo_capture();
 		hc_sr04_trigger_pulse();
 		range = hc_sr04_get_range();
 
-		printf("t[%d] va[%d] vb[%d] r[%u]\n",
+		printf("t[%d] va[%d] VBAT[%d] r[%u]\n",
 			temp, va, vb, (unsigned int)range);
 
 		/* check alerts */
 
 		alert = 0;
 
-		if (va > 3000) {
+		if (va > WATER_HI_MV) {
 			printf("Active alert: AID_WATER_LVL\n");
+			alert++;
+		}
+
+		if (vb <  VBAT_LOW_MV) {
+			printf("Active alert: AID_VBAT_LOW\n");
 			alert++;
 		}
 

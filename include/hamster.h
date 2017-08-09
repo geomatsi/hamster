@@ -21,7 +21,8 @@
 
 /* alert IDs */
 
-#define AID_NODE_ERR	1000
-#define AID_WATER_LVL	2000
+#define AID_NODE_ERR	0x1000
+#define AID_WATER_LVL	0x1001
+#define AID_VBAT_LOW	0x1002
 
 #endif	/* HAMSTER_H_H */
