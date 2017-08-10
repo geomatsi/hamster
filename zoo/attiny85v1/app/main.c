@@ -8,14 +8,13 @@
 #include <stdio.h>
 
 #include "delay.h"
-#include "w1.h"
-#include "ds18b20.h"
 
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "msg.pb.h"
 
 #include "hamster.h"
+#include "ds18b20.h"
 #include "adc.h"
 #include "radio.h"
 
@@ -85,59 +84,6 @@ static bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field
 	};
 
 	return true;
-}
-
-/* read ds18B20 temp sensor */
-
-uint32_t get_temp(void)
-{
-	uint8_t data[9];
-	uint8_t i;
-	bool ret;
-	int temp;
-
-	/* reset and check presence */
-	ret = w1_init_transaction();
-	if (!ret) {
-		return 1001;
-	}
-
-	/* skip ROM: next command can be broadcasted */
-	w1_send_byte(SKIP_ROM);
-
-	/* start single temperature conversion */
-	w1_send_byte(CONVERT_T);
-
-	/* temperature conversion takes ~1sec */
-	_delay_ms(1000);
-
-	/* reset and check presence */
-	ret = w1_init_transaction();
-	if (!ret) {
-		return 1002;
-	}
-
-	/* skip ROM: careful !!! works only for one device on bus: next command is unicast */
-	w1_send_byte(SKIP_ROM);
-
-	/* read scratchpad */
-	w1_send_byte(READ_PAD);
-
-	/* get all scratchpad bytes */
-	for (i = 0; i < 9; i++) {
-		data[i] = w1_recv_byte();
-	}
-
-	/* check crc */
-	ret = ds18b20_crc_check(data, 9);
-	if (!ret) {
-		return 1003;
-	}
-
-	/* calculate temperature */
-	temp = ds18b20_get_temp(data[1], data[0]);
-
-	return (uint32_t)temp;
 }
 
 /* read battery */
@@ -244,7 +190,7 @@ int main (void)
 		/* get new measurements */
 
 		volt = get_battery_voltage();
-		temp = get_temp();
+		temp = ds18b20_read_temp();
 
 		_delay_ms(1000);
 		/* NB: additional delay - get_temp takes > 1sec */

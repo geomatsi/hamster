@@ -5,9 +5,10 @@
 /*
  * w1_ops header should provide the following
  * app-specific defines to control pin:
- *	- SET_PIN_HIGH()
- *	- SET_PIN_LOW()
- *	- GET_PIN_VALUE()
+ *	- PLT_SET_PIN_HIGH()
+ *	- PLT_SET_PIN_LOW()
+ *	- PLT_GET_PIN_VALUE()
+ *	- PLT_DELAY_US()
  */
 
 #include "w1_ops.h"
@@ -19,16 +20,16 @@ int w1_init_transaction(void)
 	uint8_t val;
 
 	/* 1wire reset */
-	SET_PIN_LOW();
-	delay_us(600);
+	PLT_SET_PIN_LOW();
+	PLT_DELAY_US(600);
 
 	/* 1wire relax */
-	SET_PIN_HIGH();
-	delay_us(80);
+	PLT_SET_PIN_HIGH();
+	PLT_DELAY_US(80);
 
 	/* 1wire check presence */
-	val = GET_PIN_VALUE();
-	delay_us(520);
+	val = PLT_GET_PIN_VALUE();
+	PLT_DELAY_US(520);
 
 	return val ? 0 : 1;
 }
@@ -42,24 +43,27 @@ void w1_send_byte(uint8_t byte)
 
 	for(i = 0; i < 8; i++) {
 
-		// bit is declared as volatile:
-		// otherwise compiler may reorder code and perform shift after pin is set low,
-		// which may significantly increase low pulse on 1MHz devices
+		/* NB !!!
+		 * Here bit must be declared as volatile. Otherwise compiler
+		 * may reorder code and perform shift after pin is set low.
+		 * This reordering may result in significant increase
+		 * of low pulse length on 1MHz devices.
+		 */
 
 		bit = (byte >> i) & 0x01;
-		SET_PIN_LOW();
+		PLT_SET_PIN_LOW();
 
 		if (bit) {
-			delay_us(2);
-			SET_PIN_HIGH();
-			delay_us(58);
+			PLT_DELAY_US(2);
+			PLT_SET_PIN_HIGH();
+			PLT_DELAY_US(58);
 		} else {
-			delay_us(60);
-			SET_PIN_HIGH();
+			PLT_DELAY_US(60);
+			PLT_SET_PIN_HIGH();
 		}
 
 		/* min here is 1 usec */
-		delay_us(5);
+		PLT_DELAY_US(5);
 	}
 }
 
@@ -75,20 +79,30 @@ uint8_t w1_recv_byte(void)
 
 	for (i = 0; i < 8; i++) {
 
-		SET_PIN_LOW();
-		delay_us(3);
-		SET_PIN_HIGH();
-		delay_us(8);
+		PLT_SET_PIN_LOW();
+		PLT_DELAY_US(3);
+		PLT_SET_PIN_HIGH();
+		PLT_DELAY_US(8);
 
-		bit = GET_PIN_VALUE();
-		delay_us(40);
+		bit = PLT_GET_PIN_VALUE();
+		PLT_DELAY_US(40);
 
 		if (bit) {
 			byte |= (0x1 << i);
 		}
 
-		delay_us(5);
+		PLT_DELAY_US(5);
 	}
 
 	return byte;
+}
+
+void w1_delay_us(int us)
+{
+	PLT_DELAY_US(us);
+}
+
+void w1_delay_ms(int ms)
+{
+	PLT_DELAY_MS(ms);
 }

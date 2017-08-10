@@ -3,26 +3,20 @@
 
 /* Dallas/Maxim DS18B20 */
 
-/* commands */
-#define SEARCH_ROM	0xF0
-#define READ_ROM	0x33
-#define MATCH_ROM	0x55
-#define SKIP_ROM	0xCC
-#define CONVERT_T	0x44
-#define WRITE_PAD	0x4E
-#define READ_PAD	0xBE
-#define COPY_PAD	0x48
+#define DS18B20_RES_ERR		1000
+#define DS18B20_CRC_ERR		1001
+#define DS18B20_CHK_ERR		1002
 
 /* resolution */
-typedef enum { R9BIT, R10BIT, R11BIT, R12BIT } res_t;
+typedef enum {
+	R9BIT,
+	R10BIT,
+	R11BIT,
+	R12BIT,
+} res_t;
 
-/* check crc */
-int ds18b20_crc_check(const uint8_t *, uint32_t);
-
-/* set resolution: 9-12 bits */
 int ds18b20_set_res(res_t);
-
-/* calculate temperature according to resolution */
-int ds18b20_get_temp(uint8_t msb, uint8_t lsb);
+int ds18b20_read_temp(void);
+int ds18b20_valid_temp(int);
 
 #endif /* __DS18B20_H__ */

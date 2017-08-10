@@ -5,22 +5,22 @@
 
 #include <avr/io.h>
 
-#include <stdbool.h>
-
 /* platform- and app- specific 1-wire pin control */
 
-#define SET_PIN_HIGH()		\
+#define PLT_SET_PIN_HIGH()		\
 	do {					\
 		DDRB |= _BV(DDB3);	\
 		PORTB |= _BV(PB3);	\
 	} while (0)
 
-#define SET_PIN_LOW()		\
+#define PLT_SET_PIN_LOW()		\
 	do {					\
 		DDRB |= _BV(DDB3);	\
 		PORTB &= ~_BV(PB3);	\
 	} while (0)
 
-#define GET_PIN_VALUE()	(PINB & _BV(PB3))
+#define PLT_GET_PIN_VALUE()	(PINB & _BV(PB3))
+#define PLT_DELAY_US(t)		(delay_us(t))
+#define PLT_DELAY_MS(t)		(delay_ms(t))
 
 #endif /* _AVR_W1_OPS_H_ */

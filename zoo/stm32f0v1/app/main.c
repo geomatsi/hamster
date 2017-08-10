@@ -26,6 +26,7 @@
 
 #include "hamster.h"
 #include "hc-sr04.h"
+#include "ds18b20.h"
 #include "delay.h"
 
 /* */
@@ -46,7 +47,6 @@ struct rf24 *radio_init(void);
 void stdout_init(void);
 
 void w1_temp_init(void);
-int w1_temp_read(void);
 
 void adc_volt_init(void);
 void adc_volt_read(int *va, int *vb);
@@ -85,11 +85,17 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 		}
 
 	} else {
-		type[len] = (uint32_t)SID_TEMP_C(0);
-		data[len++] = (uint32_t)temp;
-
 		type[len] = (uint32_t)SID_VOLT_MV(0);
 		data[len++] = (uint32_t)vb;
+
+		if (ds18b20_valid_temp(temp)) {
+			type[len] = (uint32_t)SID_TEMP_C(0);
+			data[len++] = (uint32_t)temp;
+		} else {
+			/* report temp sensor failure */
+			type[len] = (uint32_t)AID_NODE_ERR;
+			data[len++] = (uint32_t)SID_TEMP_C(0);
+		}
 
 		if (hc_sr04_valid_range(range)) {
 			type[len] = (uint32_t)SID_RANGE_SM(0);
@@ -158,7 +164,7 @@ int main(void)
 		/* read sensors */
 
 		/* temperature: ds18b20 sensor */
-		temp = w1_temp_read();
+		temp = ds18b20_read_temp();
 
 		/* VBAT and water level trigger: ADC */
 		adc_volt_read(&va, &vb);
