@@ -17,6 +17,7 @@
 #include "ds18b20.h"
 #include "adc.h"
 #include "radio.h"
+#include "w1_init.h"
 
 /* */
 
@@ -133,8 +134,7 @@ int main (void)
 	volt = -1;
 	temp = -1;
 
-	ds18b20_set_res(R12BIT);
-
+	w1_temp_init();
 	nrf = radio_init();
 
 	delay_ms(500);

@@ -1,17 +1,15 @@
 /* simple blocking 1-wire implementation */
 
-#include <delay.h>
+#include "w1.h"
 
-/*
- * w1_ops header should provide the following
- * app-specific defines to control pin:
- *	- PLT_SET_PIN_HIGH()
- *	- PLT_SET_PIN_LOW()
- *	- PLT_GET_PIN_VALUE()
- *	- PLT_DELAY_US()
- */
+static struct w1_ops *w1;
 
-#include "w1_ops.h"
+/* register ops */
+
+void w1_register_ops(struct w1_ops *ops)
+{
+	w1 = ops;
+}
 
 /* 1wire reset and check presence */
 
@@ -20,16 +18,16 @@ int w1_init_transaction(void)
 	uint8_t val;
 
 	/* 1wire reset */
-	PLT_SET_PIN_LOW();
-	PLT_DELAY_US(600);
+	w1->set_pin_low();
+	w1->delay_us(600);
 
 	/* 1wire relax */
-	PLT_SET_PIN_HIGH();
-	PLT_DELAY_US(80);
+	w1->set_pin_high();
+	w1->delay_us(80);
 
 	/* 1wire check presence */
-	val = PLT_GET_PIN_VALUE();
-	PLT_DELAY_US(520);
+	val = w1->get_pin_val();
+	w1->delay_us(520);
 
 	return val ? 0 : 1;
 }
@@ -51,19 +49,19 @@ void w1_send_byte(uint8_t byte)
 		 */
 
 		bit = (byte >> i) & 0x01;
-		PLT_SET_PIN_LOW();
+		w1->set_pin_low();
 
 		if (bit) {
-			PLT_DELAY_US(2);
-			PLT_SET_PIN_HIGH();
-			PLT_DELAY_US(58);
+			w1->delay_us(2);
+			w1->set_pin_high();
+			w1->delay_us(58);
 		} else {
-			PLT_DELAY_US(60);
-			PLT_SET_PIN_HIGH();
+			w1->delay_us(60);
+			w1->set_pin_high();
 		}
 
 		/* min here is 1 usec */
-		PLT_DELAY_US(5);
+		w1->delay_us(5);
 	}
 }
 
@@ -79,19 +77,19 @@ uint8_t w1_recv_byte(void)
 
 	for (i = 0; i < 8; i++) {
 
-		PLT_SET_PIN_LOW();
-		PLT_DELAY_US(3);
-		PLT_SET_PIN_HIGH();
-		PLT_DELAY_US(8);
+		w1->set_pin_low();
+		w1->delay_us(3);
+		w1->set_pin_high();
+		w1->delay_us(8);
 
-		bit = PLT_GET_PIN_VALUE();
-		PLT_DELAY_US(40);
+		bit = w1->get_pin_val();
+		w1->delay_us(40);
 
 		if (bit) {
 			byte |= (0x1 << i);
 		}
 
-		PLT_DELAY_US(5);
+		w1->delay_us(5);
 	}
 
 	return byte;
@@ -99,10 +97,10 @@ uint8_t w1_recv_byte(void)
 
 void w1_delay_us(int us)
 {
-	PLT_DELAY_US(us);
+	w1->delay_us(us);
 }
 
 void w1_delay_ms(int ms)
 {
-	PLT_DELAY_MS(ms);
+	w1->delay_ms(ms);
 }

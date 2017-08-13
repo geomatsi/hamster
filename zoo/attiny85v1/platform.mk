@@ -37,6 +37,7 @@ APP_SRCS := \
 	main.c \
 	clock.c \
 	radio.c \
+	w1_init.c \
 	spi.c \
 	adc.c \
 	w1core.c \

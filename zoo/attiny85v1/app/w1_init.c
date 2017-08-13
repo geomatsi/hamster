@@ -15,42 +15,30 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
+#include <avr/io.h>
 
 #include "delay.h"
-
 #include "w1.h"
 #include "ds18b20.h"
 
 /* */
 
-static void rcc_init(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOB);
-}
-
-static void pinmux_init(void)
-{
-	gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1);
-	gpio_set_output_options(GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_LOW, GPIO1);
-}
-
-/* */
-
 static void set_pin_high(void)
 {
-	gpio_set(GPIOB, GPIO1);
+	DDRB |= _BV(DDB3);
+	PORTB |= _BV(PB3);
 }
 
 static void set_pin_low(void)
 {
-	gpio_clear(GPIOB, GPIO1);
+	DDRB |= _BV(DDB3);
+	PORTB &= ~_BV(PB3);
 }
 
 static int get_pin_val(void)
 {
-	return gpio_get(GPIOB, GPIO1) ? 1 : 0;
+	return (PINB & _BV(PB3)) ? 1 : 0;
+
 }
 
 static void set_delay_us(int us)
@@ -75,9 +63,6 @@ static struct w1_ops w1_temp_ops = {
 
 void w1_temp_init(void)
 {
-	rcc_init();
-	pinmux_init();
-
 	w1_register_ops(&w1_temp_ops);
 	ds18b20_set_res(R12BIT);
 }
