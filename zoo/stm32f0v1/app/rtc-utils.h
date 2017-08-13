@@ -1,6 +1,13 @@
 #ifndef RTC_UTILS_H
 #define RTC_UTILS_H
 
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/pwr.h>
+#include <libopencm3/stm32/exti.h>
+
+#include <libopencm3/cm3/nvic.h>
+
 /* RTC time in BCD format */
 struct rtc_time {
 	uint8_t pm;	/* 0: AM, 1: PM */
@@ -45,7 +52,11 @@ struct rtc_alarm {
 	uint8_t su;	/* second units */
 };
 
+void configure_next_alarm(int min, int sec);
 void rtc_read_calendar(struct rtc_time *time, struct rtc_date *date);
 void rtc_set_alarm(struct rtc_alarm *alarm);
+void rtc_clear_alarm(void);
+void rtc_setup(void);
+void rtc_isr(void);
 
 #endif /* RTC_UTILS_H */

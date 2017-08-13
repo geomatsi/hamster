@@ -47,6 +47,7 @@ APP_SRCS :=		\
 	stdout.c	\
 	adc.c		\
 	w1.c		\
+	rtc.c		\
 	hc-sr04.c	\
 	w1core.c	\
 	ds18b20.c	\

@@ -17,6 +17,11 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rtc.h>
+#include <libopencm3/stm32/pwr.h>
+
+#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/cm3/scb.h>
 
 #include <RF24.h>
 
@@ -28,6 +33,8 @@
 #include "hc-sr04.h"
 #include "ds18b20.h"
 #include "delay.h"
+
+#include "rtc-utils.h"
 
 /* */
 
@@ -85,8 +92,13 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 		}
 
 	} else {
+#if 0
 		type[len] = (uint32_t)SID_VOLT_MV(0);
 		data[len++] = (uint32_t)vb;
+#else
+		type[len] = (uint32_t)0xbeef;
+		data[len++] = (uint32_t)count;
+#endif
 
 		if (ds18b20_valid_temp(temp)) {
 			type[len] = (uint32_t)SID_TEMP_C(0);
@@ -129,6 +141,36 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 /* */
 
+struct rf24 *nrf;
+
+void init(void)
+{
+	rcc_clock_setup_in_hsi_out_48mhz();
+
+	delay_init();
+	stdout_init();
+	w1_temp_init();
+	adc_volt_init();
+	hc_sr04_init(48 /* MHz */);
+	nrf = radio_init();
+
+	rcc_periph_clock_enable(RCC_RTC);
+	rcc_periph_clock_enable(RCC_PWR);
+
+}
+
+static inline __attribute__((always_inline)) void __WFI(void)
+{
+	__asm volatile ("wfi");
+}
+
+void scb_enable_deep_sleep_mode(void)
+{
+	SCB_SCR |= SCB_SCR_SLEEPDEEP;
+}
+
+/* */
+
 int main(void)
 {
 
@@ -137,8 +179,6 @@ int main(void)
 #else
 #error "NODE_ID is not defined"
 #endif
-
-	struct rf24 *nrf;
 	uint8_t buf[32];
 
 	node_sensor_list message = node_sensor_list_init_default;
@@ -148,15 +188,11 @@ int main(void)
 
 	enum rf24_tx_status ret;
 
-	rcc_clock_setup_in_hsi_out_48mhz();
+	init();
 
-	delay_init();
-	stdout_init();
-	w1_temp_init();
-	adc_volt_init();
-	hc_sr04_init(48 /* MHz */);
+	rtc_setup();
 
-	nrf = radio_init();
+	/* */
 
 	printf("start xmit cycle...\r\n");
 	while (1) {
@@ -224,7 +260,16 @@ int main(void)
 			printf("written %d bytes\n", pb_len);
 		}
 
-		delay_ms(1000);
+		/* stop mode */
+		configure_next_alarm(0, 10);
+		scb_enable_deep_sleep_mode();
+		pwr_set_stop_mode();
+		pwr_voltage_regulator_low_power_in_stop();
+		pwr_clear_wakeup_flag();
+		__WFI();
+
+		init();
+
 	}
 
 	return 0;
