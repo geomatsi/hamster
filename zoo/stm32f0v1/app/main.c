@@ -62,6 +62,12 @@ void adc_volt_read(int *va, int *vb);
 
 #define PB_LIST_LEN	5
 
+#if defined(NODE_ID)
+uint32_t node_id = NODE_ID;
+#else
+#error "NODE_ID is not defined"
+#endif
+
 static uint32_t count = 0;
 static uint8_t alert = 0;
 
@@ -81,6 +87,7 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	 * Report active alerts each second message.
 	 */
 	if (alert && (count & 1)) {
+#if 0
 		if (va > WATER_HI_MV) {
 			type[len] = (uint32_t)AID_WATER_LVL;
 			data[len++] = (uint32_t)1;
@@ -90,15 +97,14 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 			type[len] = (uint32_t)AID_VBAT_LOW;
 			data[len++] = (uint32_t)1;
 		}
-
-	} else {
-#if 0
-		type[len] = (uint32_t)SID_VOLT_MV(0);
-		data[len++] = (uint32_t)vb;
 #else
 		type[len] = (uint32_t)0xbeef;
 		data[len++] = (uint32_t)count;
 #endif
+
+	} else {
+		type[len] = (uint32_t)SID_VOLT_MV(0);
+		data[len++] = (uint32_t)vb;
 
 		if (ds18b20_valid_temp(temp)) {
 			type[len] = (uint32_t)SID_TEMP_C(0);
@@ -171,14 +177,45 @@ void scb_enable_deep_sleep_mode(void)
 
 /* */
 
+void node_read_sensors(void)
+{
+	/* temperature: ds18b20 sensor */
+	temp = ds18b20_read_temp();
+
+	/* VBAT and water level trigger: ADC */
+	adc_volt_read(&va, &vb);
+
+	/* VBAT = vb * 3 */
+	vb = vb * 3;
+
+	/* range: hc-sr04 sensor */
+	hc_sr04_setup_echo_capture();
+	hc_sr04_trigger_pulse();
+	range = hc_sr04_get_range();
+
+	printf("t[%d] va[%d] VBAT[%d] r[%u]\n",
+		temp, va, vb, (unsigned int)range);
+}
+
+void node_check_alerts(void)
+{
+	alert = 0;
+
+	if (va > WATER_HI_MV) {
+		printf("Active alert: AID_WATER_LVL\n");
+		alert++;
+	}
+
+	if (vb <  VBAT_LOW_MV) {
+		printf("Active alert: AID_VBAT_LOW\n");
+		alert++;
+	}
+}
+
+/* */
+
 int main(void)
 {
-
-#if defined(NODE_ID)
-	uint32_t node_id = NODE_ID;
-#else
-#error "NODE_ID is not defined"
-#endif
 	uint8_t buf[32];
 
 	node_sensor_list message = node_sensor_list_init_default;
@@ -197,42 +234,13 @@ int main(void)
 	printf("start xmit cycle...\r\n");
 	while (1) {
 
-		/* read sensors */
+		printf("pkt #%u\n", (unsigned int)count++);
 
-		/* temperature: ds18b20 sensor */
-		temp = ds18b20_read_temp();
-
-		/* VBAT and water level trigger: ADC */
-		adc_volt_read(&va, &vb);
-
-		/* VBAT = vb * 3 */
-		vb = vb * 3;
-
-		/* range: hc-sr04 sensor */
-		hc_sr04_setup_echo_capture();
-		hc_sr04_trigger_pulse();
-		range = hc_sr04_get_range();
-
-		printf("t[%d] va[%d] VBAT[%d] r[%u]\n",
-			temp, va, vb, (unsigned int)range);
-
-		/* check alerts */
-
-		alert = 0;
-
-		if (va > WATER_HI_MV) {
-			printf("Active alert: AID_WATER_LVL\n");
-			alert++;
-		}
-
-		if (vb <  VBAT_LOW_MV) {
-			printf("Active alert: AID_VBAT_LOW\n");
-			alert++;
-		}
+		node_read_sensors();
+		node_check_alerts();
 
 		/* send data */
 
-		printf("pkt #%u\n", (unsigned int)++count);
 		memset(buf, 0x0, sizeof(buf));
 		stream = pb_ostream_from_buffer(buf, sizeof(buf));
 
@@ -269,7 +277,6 @@ int main(void)
 		__WFI();
 
 		init();
-
 	}
 
 	return 0;
