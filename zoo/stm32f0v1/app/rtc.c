@@ -152,6 +152,9 @@ void configure_next_alarm(int min, int sec)
 
 void rtc_setup(void)
 {
+	rcc_periph_clock_enable(RCC_RTC);
+	rcc_periph_clock_enable(RCC_PWR);
+
 	/* enable rtc unlocking */
 	pwr_disable_backup_domain_write_protect();
 

@@ -87,7 +87,10 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	 * Report active alerts each second message.
 	 */
 	if (alert && (count & 1)) {
-#if 0
+		/* FIXME: remove, for test only */
+		type[len] = (uint32_t)0xbeef;
+		data[len++] = (uint32_t)count;
+
 		if (va > WATER_HI_MV) {
 			type[len] = (uint32_t)AID_WATER_LVL;
 			data[len++] = (uint32_t)1;
@@ -97,10 +100,6 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 			type[len] = (uint32_t)AID_VBAT_LOW;
 			data[len++] = (uint32_t)1;
 		}
-#else
-		type[len] = (uint32_t)0xbeef;
-		data[len++] = (uint32_t)count;
-#endif
 
 	} else {
 		type[len] = (uint32_t)SID_VOLT_MV(0);
@@ -147,22 +146,9 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 /* */
 
-struct rf24 *nrf;
-
-void init(void)
+void re_init(void)
 {
 	rcc_clock_setup_in_hsi_out_48mhz();
-
-	delay_init();
-	stdout_init();
-	w1_temp_init();
-	adc_volt_init();
-	hc_sr04_init(48 /* MHz */);
-	nrf = radio_init();
-
-	rcc_periph_clock_enable(RCC_RTC);
-	rcc_periph_clock_enable(RCC_PWR);
-
 }
 
 static inline __attribute__((always_inline)) void __WFI(void)
@@ -216,6 +202,7 @@ void node_check_alerts(void)
 
 int main(void)
 {
+	struct rf24 *nrf;
 	uint8_t buf[32];
 
 	node_sensor_list message = node_sensor_list_init_default;
@@ -225,9 +212,15 @@ int main(void)
 
 	enum rf24_tx_status ret;
 
-	init();
+	rcc_clock_setup_in_hsi_out_48mhz();
 
 	rtc_setup();
+	delay_init();
+	stdout_init();
+	w1_temp_init();
+	adc_volt_init();
+	hc_sr04_init(48 /* MHz */);
+	nrf = radio_init();
 
 	/* */
 
@@ -268,7 +261,7 @@ int main(void)
 			printf("written %d bytes\n", pb_len);
 		}
 
-		/* stop mode */
+		/* enter low-power mode: stop mode */
 		configure_next_alarm(0, 10);
 		scb_enable_deep_sleep_mode();
 		pwr_set_stop_mode();
@@ -276,7 +269,8 @@ int main(void)
 		pwr_clear_wakeup_flag();
 		__WFI();
 
-		init();
+		/* re-init after low-power mode */
+		re_init();
 	}
 
 	return 0;
