@@ -25,31 +25,6 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/cm3/nvic.h>
 
-/* */
-
-static void rcc_init(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOA);
-	rcc_periph_clock_enable(RCC_TIM1);
-}
-
-static void pinmux_init(void)
-{
-	/* PA9 5V tolerant: echo pin as TIM1 CH2 input */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
-	gpio_set_af(GPIOA, GPIO_AF2, GPIO9);
-
-	/* PA10 5V tolerant: trigger pin */
-	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);
-}
-
-static void nvic_tim1_cc_setup(void)
-{
-	/* TIM1 interrupt */
-	nvic_enable_irq(NVIC_TIM1_CC_IRQ);
-	nvic_set_priority(NVIC_TIM1_CC_IRQ, 1);
-}
-
 /* capture logic */
 
 enum capture_state {
@@ -210,7 +185,17 @@ void hc_sr04_init(uint32_t mhz)
 {
 	freq = mhz;
 
-	rcc_init();
-	pinmux_init();
-	nvic_tim1_cc_setup();
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_TIM1);
+
+	/* PA9 5V tolerant: echo pin as TIM1 CH2 input */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
+	gpio_set_af(GPIOA, GPIO_AF2, GPIO9);
+
+	/* PA10 5V tolerant: trigger pin */
+	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);
+
+	/* TIM1 interrupt */
+	nvic_enable_irq(NVIC_TIM1_CC_IRQ);
+	nvic_set_priority(NVIC_TIM1_CC_IRQ, 1);
 }

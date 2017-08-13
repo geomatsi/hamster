@@ -23,18 +23,6 @@
 #include "w1.h"
 #include "ds18b20.h"
 
-/* */
-
-static void rcc_init(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOB);
-}
-
-static void pinmux_init(void)
-{
-	gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1);
-	gpio_set_output_options(GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_LOW, GPIO1);
-}
 
 /* */
 
@@ -75,8 +63,10 @@ static struct w1_ops w1_temp_ops = {
 
 void w1_temp_init(void)
 {
-	rcc_init();
-	pinmux_init();
+	rcc_periph_clock_enable(RCC_GPIOB);
+
+	gpio_mode_setup(GPIOB, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO1);
+	gpio_set_output_options(GPIOB, GPIO_OTYPE_OD, GPIO_OSPEED_LOW, GPIO1);
 
 	w1_register_ops(&w1_temp_ops);
 	ds18b20_set_res(R12BIT);

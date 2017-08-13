@@ -21,53 +21,6 @@
 
 #include "delay.h"
 
-/* */
-
-static void rcc_init(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOA);
-	rcc_periph_clock_enable(RCC_ADC);
-}
-
-static void adc_init(void)
-{
-	/* PA0:ADC_IN0, PA1:ADC_IN1, VREF:ADC_IN17 */
-	uint8_t channels[] = { 0, 1, ADC_CHANNEL_VREF };
-
-	/* ADC settings */
-	adc_power_off(ADC1);
-	adc_set_clk_source(ADC1, ADC_CLKSOURCE_ADC);
-	adc_calibrate(ADC1);
-	adc_set_operation_mode(ADC1, ADC_MODE_SEQUENTIAL);
-	adc_disable_external_trigger_regular(ADC1);
-	adc_set_right_aligned(ADC1);
-	adc_enable_temperature_sensor();
-	adc_set_sample_time_on_all_channels(ADC1, ADC_SMPTIME_071DOT5);
-	adc_set_regular_sequence(ADC1, sizeof(channels), channels);
-	adc_set_resolution(ADC1, ADC_RESOLUTION_12BIT);
-	adc_disable_analog_watchdog(ADC1);
-	adc_enable_vrefint();
-	adc_power_on(ADC1);
-
-	/* ADC startup delay */
-	delay_ms(100);
-}
-
-static void pinmux_init(void)
-{
-	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO0);
-	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO1);
-}
-
-/* */
-
-void adc_volt_init(void)
-{
-	rcc_init();
-	pinmux_init();
-	adc_init();
-}
-
 void adc_volt_read(int *va, int *vb)
 {
 	uint16_t v1;
@@ -130,4 +83,34 @@ void adc_volt_read(int *va, int *vb)
 	*vb = 1200 * v2 / v3;
 
 	return;
+}
+
+void adc_volt_init(void)
+{
+	/* PA0:ADC_IN0, PA1:ADC_IN1, VREF:ADC_IN17 */
+	uint8_t channels[] = { 0, 1, ADC_CHANNEL_VREF };
+
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_ADC);
+
+	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO0);
+	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO1);
+
+	/* ADC settings */
+	adc_power_off(ADC1);
+	adc_set_clk_source(ADC1, ADC_CLKSOURCE_ADC);
+	adc_calibrate(ADC1);
+	adc_set_operation_mode(ADC1, ADC_MODE_SEQUENTIAL);
+	adc_disable_external_trigger_regular(ADC1);
+	adc_set_right_aligned(ADC1);
+	adc_enable_temperature_sensor();
+	adc_set_sample_time_on_all_channels(ADC1, ADC_SMPTIME_071DOT5);
+	adc_set_regular_sequence(ADC1, sizeof(channels), channels);
+	adc_set_resolution(ADC1, ADC_RESOLUTION_12BIT);
+	adc_disable_analog_watchdog(ADC1);
+	adc_enable_vrefint();
+	adc_power_on(ADC1);
+
+	/* ADC startup delay */
+	delay_ms(100);
 }

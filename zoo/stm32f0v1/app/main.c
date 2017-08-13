@@ -214,12 +214,15 @@ int main(void)
 
 	rcc_clock_setup_in_hsi_out_48mhz();
 
-	rtc_setup();
+	/* delay: init first, others may need delay_ms/delay_us */
 	delay_init();
+
+	rtc_setup();
 	stdout_init();
 	w1_temp_init();
 	adc_volt_init();
 	hc_sr04_init(48 /* MHz */);
+
 	nrf = radio_init();
 
 	/* */
