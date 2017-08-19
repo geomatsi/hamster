@@ -19,6 +19,10 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
 
+#include "delay.h"
+
+#if 0	/* DBG_UART */
+
 int putchar(int c)
 {
 	uint8_t ch = (uint8_t)c;
@@ -26,20 +30,13 @@ int putchar(int c)
 	return 0;
 }
 
-void stdout_init(void)
+void dbg_init(void)
 {
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_USART1);
 
-#if 0
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9 | GPIO10);
-	gpio_set_af(GPIOA, GPIO_AF1, GPIO9 | GPIO10);
-#endif
-
-#if 1
 	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO14);
 	gpio_set_af(GPIOA, GPIO_AF1, GPIO14);
-#endif
 
 	/* setup USART1 parameters */
 	usart_set_baudrate(USART1, 115200);
@@ -52,3 +49,37 @@ void stdout_init(void)
 	/* enable USART1 */
 	usart_enable(USART1);
 }
+
+void dbg_blink(int c, int ms_on, int ms_off)
+{
+
+}
+
+#else	/* DBG_LED */
+
+int putchar(int c)
+{
+	return 0;
+}
+
+void dbg_init(void)
+{
+	rcc_periph_clock_enable(RCC_GPIOA);
+
+	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO14);
+	gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_LOW, GPIO14);
+	gpio_clear(GPIOA, GPIO14);
+}
+
+void dbg_blink(int c, int ms_on, int ms_off)
+{
+	for(int i = 0; i < c; i++) {
+		gpio_set(GPIOA, GPIO14);
+		delay_ms(ms_on);
+		gpio_clear(GPIOA, GPIO14);
+		if (i < (c - 1))
+			delay_ms(ms_off);
+	}
+}
+
+#endif

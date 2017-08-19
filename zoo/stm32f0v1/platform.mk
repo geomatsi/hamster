@@ -44,7 +44,7 @@ APP_SRCS :=		\
 	main.c		\
 	delay.c		\
 	radio.c		\
-	stdout.c	\
+	dbg.c		\
 	adc.c		\
 	w1.c		\
 	rtc.c		\

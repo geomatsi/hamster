@@ -51,7 +51,8 @@ extern void *memset(void *s, int c, size_t n);
 /* */
 
 struct rf24 *radio_init(void);
-void stdout_init(void);
+void dbg_init(void);
+void dbg_blink(int c, int ms_on, int ms_off);
 
 void w1_temp_init(void);
 
@@ -218,12 +219,14 @@ int main(void)
 	delay_init();
 
 	rtc_setup();
-	stdout_init();
+	dbg_init();
 	w1_temp_init();
 	adc_volt_init();
 	hc_sr04_init(48 /* MHz */);
 
 	nrf = radio_init();
+
+	dbg_blink(3, 1000, 100);
 
 	/* */
 
@@ -231,6 +234,7 @@ int main(void)
 	while (1) {
 
 		printf("pkt #%u\n", (unsigned int)count++);
+		dbg_blink(2, 200, 100);
 
 		node_read_sensors();
 		node_check_alerts();
