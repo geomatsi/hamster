@@ -70,7 +70,6 @@ uint32_t node_id = NODE_ID;
 #endif
 
 static uint32_t count = 0;
-static uint8_t alert = 0;
 
 static uint32_t range = 0;
 static int temp = 0;
@@ -84,23 +83,14 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	int len = 0;
 
-	/* Keep sending sensor reports even if alerts are active.
-	 * Report active alerts each second message.
-	 */
-	if (alert && (count & 1)) {
-		/* FIXME: remove, for test only */
-		type[len] = (uint32_t)0xbeef;
-		data[len++] = (uint32_t)count;
+	/* Report alert status each second message */
 
-		if (va > WATER_HI_MV) {
-			type[len] = (uint32_t)AID_WATER_LVL;
-			data[len++] = (uint32_t)1;
-		}
+	if (count & 1) {
+		type[len] = (uint32_t)AID_WATER_LVL;
+		data[len++] = (va > WATER_HI_MV) ? 1 : 0;
 
-		if (vb <  VBAT_LOW_MV) {
-			type[len] = (uint32_t)AID_VBAT_LOW;
-			data[len++] = (uint32_t)1;
-		}
+		type[len] = (uint32_t)AID_VBAT_LOW;
+		data[len++] = (vb <  VBAT_LOW_MV) ? 1 : 0;
 
 	} else {
 		type[len] = (uint32_t)SID_VOLT_MV(0);
@@ -184,21 +174,6 @@ void node_read_sensors(void)
 		temp, va, vb, (unsigned int)range);
 }
 
-void node_check_alerts(void)
-{
-	alert = 0;
-
-	if (va > WATER_HI_MV) {
-		printf("Active alert: AID_WATER_LVL\n");
-		alert++;
-	}
-
-	if (vb <  VBAT_LOW_MV) {
-		printf("Active alert: AID_VBAT_LOW\n");
-		alert++;
-	}
-}
-
 /* */
 
 int main(void)
@@ -237,7 +212,6 @@ int main(void)
 		dbg_blink(2, 200, 100);
 
 		node_read_sensors();
-		node_check_alerts();
 
 		/* send data */
 
