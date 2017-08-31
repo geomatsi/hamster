@@ -73,26 +73,36 @@ do {					\
 
 /* */
 
-#define PB_LIST_LEN 2
+#define VBAT_LOW_MV	2700
+#define PB_LIST_LEN	5
+
+static unsigned int count = 0;
+static int temp = 0;
+static int vbat = 0;
 
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
 	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
 	sensor_data sensor = {};
-	uint32_t idx;
+	int len = 0;
 
-	type[0] = (uint32_t)SID_VOLT_MV(0);
-	data[0] = (uint32_t)read_vcc();
+	if (count & 1) {
+		type[len] = (uint32_t)AID_VBAT_LOW;
+		data[len++] = (vbat <  VBAT_LOW_MV) ? 1 : 0;
+	} else {
+		type[len] = (uint32_t)SID_VOLT_MV(0);
+		data[len++] = (uint32_t)vbat;
 
-	type[0] = (uint32_t)SID_TEMP_C(0);
-	data[1] = (uint32_t)read_temp_mcp9700();
+		type[len] = (uint32_t)SID_TEMP_C(0);
+		data[len++] = (uint32_t)temp;
+	}
 
 	/* encode  sensor_data */
 
-	for (idx = 0; idx < PB_LIST_LEN; idx++) {
+	for (int idx = 0; idx < len; idx++) {
 
-		printf("protobuf encoding: (%lu, %lu)\n", idx, data[idx]);
+		printf("protobuf encoding: (%d, %lu)\n", idx, data[idx]);
 
 		sensor.type = type[idx];
 		sensor.data = data[idx];
@@ -113,6 +123,20 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 /* */
 
+void node_read_sensors(void)
+{
+	/* temperature: mcp9700 sensor */
+	temp = (int)read_temp_mcp9700();
+
+	/* battery voltage */
+	vbat = (int)read_vcc();
+
+	printf("t[%d] VBAT[%d]\n", temp, vbat);
+}
+
+
+/* */
+
 int main(void)
 {
 #if defined(NODE_ID)
@@ -126,8 +150,6 @@ int main(void)
 	uint8_t addr[] = NRF_ADDR;
 
 	uint8_t buf[32];
-
-	unsigned int count = 0;
 
 	node_sensor_list message = {};
 	pb_ostream_t stream;
@@ -162,6 +184,10 @@ int main(void)
 
 	while (1){
 		printf("send pkt #%u\n", ++count);
+		node_read_sensors();
+
+		/* send data */
+
 		memset(buf, 0x0, sizeof(buf));
 		stream = pb_ostream_from_buffer(buf, sizeof(buf));
 
