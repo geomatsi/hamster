@@ -132,7 +132,7 @@ DUDE_OPTIONS_FT232RL =		\
 ## upload rules
 
 upload-serial:
-	avrdude $(DUDE_OPTIONS_SERIAL) -U flash:w:out/firmware.hex
+	avrdude $(DUDE_OPTIONS_SERIAL) -U flash:w:out/${PLAT}.out/firmware.hex
 
 upload:
-	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:out/firmware.hex
+	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:out/${PLAT}.out/firmware.hex
