@@ -9,7 +9,8 @@
 #define NRF_CHAN	110
 #define NRF_RATE	RF24_RATE_250K
 #define NRF_CRC		RF24_CRC_16_BITS
-#define NRF_PA		RF24_PA_MIN
+#define NRF_PA		RF24_PA_MAX
+#define NRF_LNA_PA	RF24_PA_MIN
 
 /* sensor IDs */
 

@@ -113,7 +113,7 @@ struct rf24 *radio_init(void)
 	rf24_set_channel(nrf, NRF_CHAN);
 	rf24_set_data_rate(nrf, NRF_RATE);
 	rf24_set_crc_mode(nrf, NRF_CRC);
-	rf24_set_pa_level(nrf, NRF_PA);
+	rf24_set_pa_level(nrf, NRF_LNA_PA);
 
 	rf24_setup_ptx(nrf, addr);
 	rf24_start_ptx(nrf);
