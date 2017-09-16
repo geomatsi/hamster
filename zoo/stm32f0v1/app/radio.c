@@ -35,7 +35,7 @@ static void rcc_init(void)
 static void spi_init(void)
 {
 	spi_set_master_mode(SPI1);
-	spi_set_baudrate_prescaler(SPI1, SPI_CR1_BR_FPCLK_DIV_16);
+	spi_set_baudrate_prescaler(SPI1, SPI_CR1_BR_FPCLK_DIV_64);
 	spi_set_clock_polarity_0(SPI1);
 	spi_set_clock_phase_0(SPI1);
 	spi_set_full_duplex_mode(SPI1);
