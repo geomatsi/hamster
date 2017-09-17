@@ -11,8 +11,9 @@ before_install:
 - sudo apt-get install -y gcc-avr binutils-avr avr-libc
 - sudo apt-get install -y protobuf-compiler protobuf-c-compiler libprotobuf-dev
 
-# setup python-protobuf package
-- pip install protobuf
+# upgrade pip and install python-protobuf package
+- pip install --user -U pip
+- pip install --user protobuf
 
 script:
 # stm32f0v1 board
