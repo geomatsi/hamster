@@ -70,10 +70,25 @@ CFLAGS = $(APP_PLT_FLAGS)
 CFLAGS += -std=c99 -Wall -Werror -Os -DSTM32F0
 
 # set sensor node ID
+
 ifneq (${NODE_ID},)
 CFLAGS += -DNODE_ID=${NODE_ID}
 else
 CFLAGS += -DNODE_ID=1234
+endif
+
+# set sensor capabilities
+
+ifneq (${NODE_TEMP},)
+CFLAGS += -DNODE_TEMP=${NODE_TEMP}
+endif
+
+ifneq (${NODE_RANGE},)
+CFLAGS += -DNODE_RANGE=${NODE_RANGE}
+endif
+
+ifneq (${NODE_ADC},)
+CFLAGS += -DNODE_ADC=${NODE_ADC}
 endif
 
 # tweak nanopb size

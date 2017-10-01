@@ -40,6 +40,7 @@
 
 #define VBAT_LOW_MV	6500
 #define WATER_HI_MV	3000
+#define WATER_LOW_RANGE	30
 
 /* FIXME: create tinylib and its header for this stuff */
 
@@ -54,10 +55,21 @@ struct rf24 *radio_init(void);
 void dbg_init(void);
 void dbg_blink(int c, int ms_on, int ms_off);
 
+#if defined(NODE_TEMP)
 void w1_temp_init(void);
+static int temp = 0;
+#endif
 
+#if defined(NODE_ADC)
 void adc_volt_init(void);
 void adc_volt_read(int *va, int *vb);
+static int va = 0;
+static int vb = 0;
+#endif
+
+#if defined(NODE_RANGE)
+static uint32_t range = 0;
+#endif
 
 /* */
 
@@ -71,11 +83,6 @@ uint32_t node_id = NODE_ID;
 
 static uint32_t count = 0;
 
-static uint32_t range = 0;
-static int temp = 0;
-static int va = 0;
-static int vb = 0;
-
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
 	uint32_t type[PB_LIST_LEN];
@@ -86,16 +93,25 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	/* Report alert status each second message */
 
 	if (count & 1) {
+#if defined(NODE_ADC)
 		type[len] = (uint32_t)AID_WATER_LVL;
 		data[len++] = (va > WATER_HI_MV) ? 1 : 0;
 
 		type[len] = (uint32_t)AID_VBAT_LOW;
 		data[len++] = (vb <  VBAT_LOW_MV) ? 1 : 0;
+#endif
 
+#if defined(NODE_RANGE)
+		type[len] = (uint32_t)AID_WATER_LVL;
+		data[len++] = (range < WATER_LOW_RANGE) ? 1 : 0;
+#endif
 	} else {
+#if defined(NODE_ADC)
 		type[len] = (uint32_t)SID_VOLT_MV(0);
 		data[len++] = (uint32_t)vb;
+#endif
 
+#if defined(NODE_TEMP)
 		if (ds18b20_valid_temp(temp)) {
 			type[len] = (uint32_t)SID_TEMP_C(0);
 			data[len++] = (uint32_t)temp;
@@ -104,7 +120,9 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 			type[len] = (uint32_t)AID_NODE_ERR;
 			data[len++] = (uint32_t)SID_TEMP_C(0);
 		}
+#endif
 
+#if defined(NODE_RANGE)
 		if (hc_sr04_valid_range(range)) {
 			type[len] = (uint32_t)SID_RANGE_SM(0);
 			data[len++] = (uint32_t)range;
@@ -113,6 +131,7 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 			type[len] = (uint32_t)AID_NODE_ERR;
 			data[len++] = (uint32_t)SID_RANGE_SM(0);
 		}
+#endif
 	}
 
 	/* encode  sensor_data */
@@ -157,21 +176,24 @@ void scb_enable_deep_sleep_mode(void)
 void node_read_sensors(void)
 {
 	/* temperature: ds18b20 sensor */
+#if defined(NODE_TEMP)
 	temp = ds18b20_read_temp();
+#endif
 
 	/* VBAT and water level trigger: ADC */
+#if defined(NODE_ADC)
 	adc_volt_read(&va, &vb);
 
 	/* VBAT = vb * 3 */
 	vb = vb * 3;
+#endif
 
 	/* range: hc-sr04 sensor */
+#if defined(NODE_RANGE)
 	hc_sr04_setup_echo_capture();
 	hc_sr04_trigger_pulse();
 	range = hc_sr04_get_range();
-
-	printf("t[%d] va[%d] VBAT[%d] r[%u]\n",
-		temp, va, vb, (unsigned int)range);
+#endif
 }
 
 /* */
@@ -192,12 +214,23 @@ int main(void)
 
 	/* delay: init first, others may need delay_ms/delay_us */
 	delay_init();
-
-	rtc_setup();
 	dbg_init();
+
+#if defined(NODE_LPR)
+	rtc_setup();
+#endif
+
+#if defined(NODE_TEMP)
 	w1_temp_init();
+#endif
+
+#if defined(NODE_ADC)
 	adc_volt_init();
+#endif
+
+#if defined(NODE_RANGE)
 	hc_sr04_init(48 /* MHz */);
+#endif
 
 	nrf = radio_init();
 
@@ -209,7 +242,7 @@ int main(void)
 	while (1) {
 
 		printf("pkt #%u\n", (unsigned int)count++);
-		dbg_blink(2, 200, 100);
+		dbg_blink(2, 500, 100);
 
 		node_read_sensors();
 
@@ -238,12 +271,15 @@ int main(void)
 			printf("send error: %d\n", ret);
 			rf24_flush_tx(nrf);
 			rf24_flush_rx(nrf);
+			dbg_blink(5, 100, 100);
 		} else {
 			printf("written %d bytes\n", pb_len);
+			dbg_blink(2, 100, 100);
 		}
 
+#if defined(NODE_LPR)
 		/* enter low-power mode: stop mode */
-		configure_next_alarm(0, 10);
+		configure_next_alarm(0, 30);
 		scb_enable_deep_sleep_mode();
 		pwr_set_stop_mode();
 		pwr_voltage_regulator_low_power_in_stop();
@@ -252,6 +288,9 @@ int main(void)
 
 		/* re-init after low-power mode */
 		re_init();
+#else
+		delay_ms(20000);
+#endif
 	}
 
 	return 0;
