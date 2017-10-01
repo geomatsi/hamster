@@ -221,8 +221,12 @@ int main(void)
 		adc_disable();
 		power_all_disable();
 
-		wdt_setup(WDTO_8S);
-		lpm_bod_off(SLEEP_MODE_PWR_DOWN);
+#define NODE_PERIOD	300
+
+		for(int ts = 0; ts < NODE_PERIOD; ts += 8) {
+			wdt_setup(WDTO_8S);
+			lpm_bod_off(SLEEP_MODE_PWR_DOWN);
+		}
 
 		power_usart0_enable();
 		power_adc_enable();
