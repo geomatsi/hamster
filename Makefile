@@ -4,17 +4,34 @@
 
 ## supported platform
 
-# stm32f0v1
-ARCH	= arm
-PLAT	= stm32f0v1
+## stm32f0v1
+ARCH		?= arm
+PLAT		?= stm32f0v1
+NODE_ID		?= 101
+NODE_RANGE	?= 1
+
+## stm32f0v1
+#ARCH		?= arm
+#PLAT		?= stm32f0v1
+#NODE_ID	?= 102
+#NODE_TEMP	?= 1
+#NODE_RANGE	?= 1
 
 # attiny85v1
-#ARCH	= avr
-#PLAT	= attiny85v1
+#ARCH		?= avr
+#PLAT		?= attiny85v1
+#NODE_ID	?= 201
 
 # devduino2
-#ARCH	= avr
-#PLAT	= devduino2
+#ARCH		?= avr
+#PLAT		?= devduino2
+#NODE_ID	?= 301
+
+
+# stm32f030r8t6-nucleo: test node for hub debug
+#ARCH		?= arm
+#PLAT		?= stm32f030r8t6-nucleo-test
+#NODE_ID	?= 10
 
 # project and output directories
 
@@ -30,6 +47,7 @@ info:
 	@echo "ARCH = $(ARCH)"
 	@echo "PLAT = $(PLAT)"
 	@echo "CHIP = $(CHIP)"
+	@echo "NODE = $(NODE_ID)"
 
 ## dependencies
 
