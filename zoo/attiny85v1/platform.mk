@@ -37,10 +37,9 @@ APP_SRCS := \
 	main.c \
 	clock.c \
 	radio.c \
-	w1_init.c \
+	w1.c \
 	spi.c \
 	adc.c \
-	w1core.c \
 	ds18b20.c \
 	pb_common.c \
 	pb_encode.c \
@@ -131,10 +130,10 @@ DUDE_OPTIONS_FT232RL =		\
 upload: upload-ft232rl
 
 upload-ft232rl:
-	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:out/firmware.hex -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:${OBJ_DIR}/firmware.hex -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 upload-um232h:
-	avrdude $(DUDE_OPTIONS_UM232H) -U flash:w:out/firmware.hex -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	avrdude $(DUDE_OPTIONS_UM232H) -U flash:w:${OBJ_DIR}/firmware.hex -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 # Fuse bits:
 #	- to set 8MHz:  -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m

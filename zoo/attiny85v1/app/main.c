@@ -17,7 +17,6 @@
 #include "ds18b20.h"
 #include "adc.h"
 #include "radio.h"
-#include "w1_init.h"
 
 /* */
 
@@ -46,31 +45,36 @@ ISR(WDT_vect)
 
 /* */
 
-#define PB_LIST_LEN	2
+#define VBAT_LOW_MV	2500
+#define PB_LIST_LEN	5
 
-/* */
-
-uint32_t volt;
-uint32_t temp;
+static unsigned int count = 0;
+uint32_t vbat = 0;
+uint32_t temp = 0;
 
 /* */
 
 static bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
-	sensor_data sensor = {};
 	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
-	uint32_t idx;
+	sensor_data sensor = {};
+	uint32_t len = 0;
 
-	data[0] = SID_VOLT_MV(0);
-	data[0] = volt;
+	if (count & 1) {
+		type[len] = (uint32_t)AID_VBAT_LOW;
+		data[len++] = (vbat <  VBAT_LOW_MV) ? 1 : 0;
+	} else {
+		type[len] = SID_VOLT_MV(0);
+		data[len++] = vbat;
 
-	data[1] = SID_TEMP_C(0);
-	data[1] = temp;
+		type[len] = SID_TEMP_C(0);
+		data[len++] = temp;
+	}
 
 	/* encode sensor_data */
 
-	for (idx = 0; idx < PB_LIST_LEN; idx++) {
+	for (int idx = 0; idx < len; idx++) {
 
 		sensor.type = type[idx];
 		sensor.data = data[idx];
@@ -131,10 +135,7 @@ int main (void)
 
 	/* */
 
-	volt = -1;
-	temp = -1;
-
-	w1_temp_init();
+	ds18b20_set_res(R12BIT);
 	nrf = radio_init();
 
 	delay_ms(500);
@@ -151,6 +152,10 @@ int main (void)
 	rf24_start_ptx(nrf);
 
 	while (1) {
+
+		/* get new measurements */
+		vbat = get_battery_voltage();
+		temp = ds18b20_read_temp();
 
 		memset(buf, 0x0, sizeof(buf));
 		stream = pb_ostream_from_buffer(buf, sizeof(buf));
@@ -180,20 +185,16 @@ int main (void)
 		adc_disable();
 		power_all_disable();
 
-		wdt_setup(WDTO_8S);
-		lpm_bod_off(SLEEP_MODE_PWR_DOWN);
+#define NODE_PERIOD	5
+
+		for(int ts = 0; ts < NODE_PERIOD; ts += 8) {
+			wdt_setup(WDTO_8S);
+			lpm_bod_off(SLEEP_MODE_PWR_DOWN);
+		}
 
 		power_adc_enable();
 		power_usi_enable();
 		adc_enable();
-
-		/* get new measurements */
-
-		volt = get_battery_voltage();
-		temp = ds18b20_read_temp();
-
-		_delay_ms(1000);
-		/* NB: additional delay - get_temp takes > 1sec */
 	}
 
 	return 1;

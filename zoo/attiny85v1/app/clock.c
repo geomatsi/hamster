@@ -3,18 +3,18 @@
 
 void delay_us(int delay)
 {
-	uint16_t i;
-
-	for (i = 0; i < delay; i++){
+	/* FIXME: very coarse delay_us implementation
+	 * because each MCU instruction takes ~1us
+	 *
+	 * - not suitable for w1 operations
+	 * - suitable for nRF24 ops
+	 */
+	for (int i = 0; i < delay; i++)
 		_delay_us(1);
-	}
 }
 
 void delay_ms(int delay)
 {
-	uint16_t i;
-
-	for (i = 0; i < delay; i++){
+	for (int i = 0; i < delay; i++)
 		_delay_ms(1);
-	}
 }
