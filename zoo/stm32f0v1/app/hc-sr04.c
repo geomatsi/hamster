@@ -43,14 +43,14 @@ void tim1_cc_isr(void)
 	volatile uint16_t status = TIM_SR(TIM1);
 
 
-	if (status & (TIM_SR_CC2OF | TIM_SR_UIF)) {
+	if (status & (TIM_SR_CC3OF | TIM_SR_UIF)) {
 		state = ERROR;
 		goto irq_done;
 	}
 
 	switch (state) {
 	case READY:
-		if (status & TIM_SR_CC2IF) {
+		if (status & TIM_SR_CC3IF) {
 			/* first pulse edge: start counter */
 			TIM_CR1(TIM1) |= TIM_CR1_CEN;
 
@@ -62,12 +62,12 @@ void tim1_cc_isr(void)
 
 		break;
 	case RUNNING:
-		if (status & TIM_SR_CC2IF) {
+		if (status & TIM_SR_CC3IF) {
 			/* second pulse edge: stop counter*/
 			TIM_CR1(TIM1) &= ~TIM_CR1_CEN;
 
 			/* read captured counter */
-			pulse = TIM_CCR2(TIM1);
+			pulse = TIM_CCR3(TIM1);
 
 			/* disable interrupts */
 			TIM_DIER(TIM1) = 0x0;
@@ -111,16 +111,16 @@ void hc_sr04_setup_echo_capture()
 	TIM_PSC(TIM1) = freq;
 
 	/* TIM1 mode: input capture mode */
-	TIM_CCMR1(TIM1) =
-		TIM_CCMR1_CC2S_IN_TI2 |		/* CC1 is input, IC1 is mapped to TI2 */
-		TIM_CCMR1_IC2F_CK_INT_N_8 |	/* input filter: 8 clock cycles */
-		TIM_CCMR1_IC2PSC_OFF;		/* capture is done on each edge */
+	TIM_CCMR2(TIM1) =
+		TIM_CCMR2_CC3S_IN_TI3 |		/* CC3 is input, IC3 is mapped to TI3 */
+		TIM_CCMR2_IC3F_CK_INT_N_8 |	/* input filter: 8 clock cycles */
+		TIM_CCMR2_IC3PSC_OFF;		/* capture is done on each edge */
 
 	/* enable capture: sensitive to both edges */
-	TIM_CCER(TIM1) = TIM_CCER_CC2E | TIM_CCER_CC2P | TIM_CCER_CC2NP;
+	TIM_CCER(TIM1) = TIM_CCER_CC3E | TIM_CCER_CC3P | TIM_CCER_CC3NP;
 
 	/* enable interrupts */
-	TIM_DIER(TIM1) = TIM_DIER_CC2IE | TIM_DIER_UIE;
+	TIM_DIER(TIM1) = TIM_DIER_CC3IE | TIM_DIER_UIE;
 
 	/* only counter overflow should generate UEV */
 	TIM_CR1(TIM1) &= ~TIM_CR1_UDIS;
@@ -148,13 +148,13 @@ void hc_sr04_trigger_pulse(void)
 	volatile int i;
 
 	/* TRIG of SR04 must receive a pulse at least 10 usec */
-	gpio_set(GPIOA, GPIO10);
+	gpio_set(GPIOA, GPIO9);
 
 	/* ~50 usec for clk 48MHz */
 	for (i = 0; i < 150; i++)
 		__asm__("nop");
 
-	gpio_clear(GPIOA, GPIO10);
+	gpio_clear(GPIOA, GPIO9);
 }
 
 uint32_t hc_sr04_get_range(void)
@@ -188,12 +188,12 @@ void hc_sr04_init(uint32_t mhz)
 	rcc_periph_clock_enable(RCC_GPIOA);
 	rcc_periph_clock_enable(RCC_TIM1);
 
-	/* PA9 5V tolerant: echo pin as TIM1 CH2 input */
-	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO9);
-	gpio_set_af(GPIOA, GPIO_AF2, GPIO9);
+	/* PA10 5V tolerant: echo pin as TIM1 CH3 input */
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO10);
+	gpio_set_af(GPIOA, GPIO_AF2, GPIO10);
 
-	/* PA10 5V tolerant: trigger pin */
-	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);
+	/* PA9 5V tolerant: trigger pin */
+	gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO9);
 
 	/* TIM1 interrupt */
 	nvic_enable_irq(NVIC_TIM1_CC_IRQ);

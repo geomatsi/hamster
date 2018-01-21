@@ -8,6 +8,7 @@
 ARCH		?= arm
 PLAT		?= stm32f0v1
 NODE_ID		?= 101
+NODE_TEMP	?= 1
 NODE_RANGE	?= 1
 
 ## stm32f0v1
