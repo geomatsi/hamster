@@ -8,3 +8,6 @@ out
 
 # ctags
 tags
+
+# patches directory
+patches
