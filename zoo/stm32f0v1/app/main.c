@@ -41,7 +41,7 @@
 
 #define VBAT_LOW_MV	6500
 #define WATER_HI_MV	3000
-#define WATER_LOW_RANGE	30
+#define WATER_LOW_RANGE	20
 
 /* FIXME: create tinylib and its header for this stuff */
 
