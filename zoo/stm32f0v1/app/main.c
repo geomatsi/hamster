@@ -19,6 +19,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rtc.h>
 #include <libopencm3/stm32/pwr.h>
+#include <libopencm3/stm32/iwdg.h>
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/cm3/scb.h>
@@ -236,11 +237,15 @@ int main(void)
 
 	dbg_blink(3, 1000, 100);
 
+	iwdg_set_period_ms(30000);
+	iwdg_start();
+
 	/* */
 
 	printf("start xmit cycle...\r\n");
 	while (1) {
 
+		iwdg_reset();
 		printf("pkt #%u\n", (unsigned int)count++);
 		dbg_blink(2, 500, 100);
 
@@ -289,6 +294,7 @@ int main(void)
 		/* re-init after low-power mode */
 		re_init();
 #else
+		iwdg_reset();
 		delay_ms(20000);
 #endif
 	}
