@@ -26,4 +26,8 @@
 #define AID_WATER_LVL	0x1001
 #define AID_VBAT_LOW	0x1002
 
+/* diagnostics event IDs */
+
+#define EID_NODE(i)	(0x100 + (i))
+
 #endif	/* HAMSTER_H_H */
