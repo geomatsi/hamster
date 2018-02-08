@@ -91,48 +91,59 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	sensor_data sensor = {};
 	int len = 0;
 
-	/* Report alert status each second message */
+	/* message circle: alerts -> sensor1 -> ... -> sensorN */
 
-	if (count & 1) {
+	switch (count & 0x3) {
+		case 0x0:
+			/* report count: diag(0) */
+			type[len] = (uint32_t)EID_NODE(0);
+			data[len++] = (uint32_t)count;
+			break;
+		case 0x1:
 #if defined(NODE_ADC)
-		type[len] = (uint32_t)AID_WATER_LVL;
-		data[len++] = (va > WATER_HI_MV) ? 1 : 0;
-
-		type[len] = (uint32_t)AID_VBAT_LOW;
-		data[len++] = (vb <  VBAT_LOW_MV) ? 1 : 0;
+			type[len] = (uint32_t)AID_VBAT_LOW;
+			data[len++] = (vb <  VBAT_LOW_MV) ? 1 : 0;
 #endif
-
 #if defined(NODE_RANGE)
-		type[len] = (uint32_t)AID_WATER_LVL;
-		data[len++] = (range < WATER_LOW_RANGE) ? 1 : 0;
+			type[len] = (uint32_t)AID_WATER_LVL;
+			data[len++] = (range < WATER_LOW_RANGE) ? 1 : 0;
 #endif
-	} else {
-#if defined(NODE_ADC)
-		type[len] = (uint32_t)SID_VOLT_MV(0);
-		data[len++] = (uint32_t)vb;
-#endif
-
+			break;
 #if defined(NODE_TEMP)
-		if (ds18b20_valid_temp(temp)) {
-			type[len] = (uint32_t)SID_TEMP_C(0);
-			data[len++] = (uint32_t)temp;
-		} else {
-			/* report temp sensor failure */
-			type[len] = (uint32_t)AID_NODE_ERR;
-			data[len++] = (uint32_t)SID_TEMP_C(0);
-		}
+		case 0x2:
+			if (ds18b20_valid_temp(temp)) {
+				type[len] = (uint32_t)SID_TEMP_C(0);
+				data[len++] = (uint32_t)temp;
+			} else {
+				/* report temp sensor failure */
+				type[len] = (uint32_t)AID_NODE_ERR;
+				data[len++] = (uint32_t)SID_TEMP_C(0);
+			}
+			break;
 #endif
-
 #if defined(NODE_RANGE)
-		if (hc_sr04_valid_range(range)) {
-			type[len] = (uint32_t)SID_RANGE_SM(0);
-			data[len++] = (uint32_t)range;
-		} else {
-			/* report range sensor failure */
-			type[len] = (uint32_t)AID_NODE_ERR;
-			data[len++] = (uint32_t)SID_RANGE_SM(0);
-		}
+		case 0x3:
+			if (hc_sr04_valid_range(range)) {
+				type[len] = (uint32_t)SID_RANGE_SM(0);
+				data[len++] = (uint32_t)range;
+			} else {
+				/* report range sensor failure */
+				type[len] = (uint32_t)AID_NODE_ERR;
+				data[len++] = (uint32_t)SID_RANGE_SM(0);
+			}
+			break;
 #endif
+#if defined(NODE_ADC)
+		case :
+			type[len] = (uint32_t)SID_VOLT_MV(0);
+			data[len++] = (uint32_t)vb;
+			break;
+#endif
+		default:
+			/* should not be here: report event(1) */
+			type[len] = (uint32_t)EID_NODE(1);
+			data[len++] = (uint32_t)__LINE__;
+			break;
 	}
 
 	/* encode  sensor_data */
@@ -295,7 +306,7 @@ int main(void)
 		re_init();
 #else
 		iwdg_reset();
-		delay_ms(20000);
+		delay_ms(10000);
 #endif
 	}
 
