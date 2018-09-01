@@ -17,6 +17,7 @@
 #define SID_TEMP_C(i)	(0x10 + (i))
 #define SID_RANGE_SM(i)	(0x20 + (i))
 #define SID_VOLT_MV(i)	(0x30 + (i))
+#define SID_HUM_PER(i)	(0x40 + (i))
 
 #define SID_MASK	0xF
 
