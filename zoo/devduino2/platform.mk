@@ -129,10 +129,23 @@ DUDE_OPTIONS_FT232RL =		\
 	-c $(PROGRAMMER)	\
 	-B $(FTDI_BBSYNC_RATE)
 
+# programming using USB-ASP programmer
+
+PROGRAMMER  = usbasp
+
+DUDE_OPTIONS_USBASP =		\
+	-p $(CHIP)		\
+	-c $(PROGRAMMER)
+
 ## upload rules
 
 upload-serial:
 	avrdude $(DUDE_OPTIONS_SERIAL) -U flash:w:out/${PLAT}.out/firmware.hex
 
-upload:
+upload-ft232rl:
 	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:out/${PLAT}.out/firmware.hex
+
+upload-usbasp:
+	avrdude $(DUDE_OPTIONS_USBASP) -U flash:w:out/${PLAT}.out/firmware.hex
+
+upload: upload-usbasp
