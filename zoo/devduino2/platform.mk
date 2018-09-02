@@ -41,6 +41,7 @@ APP_SRCS := \
 	radio.c \
 	vcc.c	\
 	adc.c	\
+	dht.c	\
 	temp_mcp9700.c \
 	pb_common.c \
 	pb_encode.c \
