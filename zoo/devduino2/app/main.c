@@ -237,7 +237,7 @@ int main(void)
 		adc_disable();
 		power_all_disable();
 
-#define NODE_PERIOD	300
+#define NODE_PERIOD	60
 
 		for(int ts = 0; ts < NODE_PERIOD; ts += 8) {
 			wdt_setup(WDTO_8S);
