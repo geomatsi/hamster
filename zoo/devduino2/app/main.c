@@ -74,7 +74,7 @@ do {					\
 
 /* */
 
-#define NUM_CYCLES	3	
+#define NUM_CYCLES	2
 
 bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void * const *arg)
 {
@@ -84,7 +84,6 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 	uint32_t type[PB_LIST_LEN];
 	uint32_t data[PB_LIST_LEN];
 	dht_res_t ret;
-	long v;
 	uint8_t t;
 	uint8_t h;
 	int cidx;
@@ -93,19 +92,13 @@ bool sensor_encode_callback(pb_ostream_t *stream, const pb_field_t *field, void 
 
 	switch (cidx) {
 	case 0:
-#define VBAT_LOW_MV	2750
-		v = (long)read_vcc();
-		type[len] = (uint32_t)AID_VBAT_LOW;
-		data[len++] = (v <  VBAT_LOW_MV) ? 1 : 0;
-		break;
-	case 1:
 		type[len] = (uint32_t)SID_VOLT_MV(0);
 		data[len++] = (uint32_t)read_vcc();
 
 		type[len] = (uint32_t)SID_TEMP_C(0);
 		data[len++] = (uint32_t)read_temp_mcp9700();
 		break;
-	case 2:
+	case 1:
 		dht_power_up();
 		_delay_ms(2000);
 		ret = dht_read(DHT_TYPE_DHT11, &t, NULL, &h, NULL);
