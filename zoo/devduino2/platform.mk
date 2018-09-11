@@ -7,7 +7,7 @@
 #
 
 CHIP		= atmega328p
-CLK_FREQ	= 16000000L
+CLK_FREQ	= 2000000L
 APP		= $(PLAT).app
 
 ## platform toolchain
@@ -105,6 +105,10 @@ $(OBJ_DIR)/%.pb.c $(OBJ_DIR)/%.pb.h: $(PROTOBUF_SRC)/%.proto
 
 ## platform-specific loader flags
 
+# FUSES: EXT_OSC=16 MHz, CKDIV8=1
+
+FUSES	= -U lfuse:w:0x7f:m -U hfuse:w:0xda:m -U efuse:w:0xff:m
+
 # programming using arduino bootloader
 
 SERIAL_PORT	= /dev/ttyUSB0
@@ -141,12 +145,12 @@ DUDE_OPTIONS_USBASP =		\
 ## upload rules
 
 upload-serial:
-	avrdude $(DUDE_OPTIONS_SERIAL) -U flash:w:out/${PLAT}.out/firmware.hex
+	avrdude $(DUDE_OPTIONS_SERIAL) $(FUSES) -U flash:w:out/${PLAT}.out/firmware.hex
 
 upload-ft232rl:
-	avrdude $(DUDE_OPTIONS_FT232RL) -U flash:w:out/${PLAT}.out/firmware.hex
+	avrdude $(DUDE_OPTIONS_FT232RL) $(FUSES) -U flash:w:out/${PLAT}.out/firmware.hex
 
 upload-usbasp:
-	avrdude $(DUDE_OPTIONS_USBASP) -U flash:w:out/${PLAT}.out/firmware.hex
+	avrdude $(DUDE_OPTIONS_USBASP) $(FUSES) -U flash:w:out/${PLAT}.out/firmware.hex
 
 upload: upload-usbasp
