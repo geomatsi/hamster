@@ -190,6 +190,7 @@ void node_read_sensors(void)
 	/* temperature: ds18b20 sensor */
 #if defined(NODE_TEMP)
 	temp = ds18b20_read_temp();
+	printf("temp [%u]\r\n", (unsigned int)temp);
 #endif
 
 	/* VBAT and water level trigger: ADC */
@@ -205,6 +206,7 @@ void node_read_sensors(void)
 	hc_sr04_setup_echo_capture();
 	hc_sr04_trigger_pulse();
 	range = hc_sr04_get_range();
+	printf("range [%u]\r\n", (unsigned int)range);
 #endif
 }
 
