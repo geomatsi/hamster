@@ -91,6 +91,10 @@ ifneq (${NODE_ADC},)
 CFLAGS += -DNODE_ADC=${NODE_ADC}
 endif
 
+ifneq (${UART_DBG},)
+CFLAGS += -DUART_DBG=${UART_DBG}
+endif
+
 # tweak nanopb size
 CFLAGS += -DPB_BUFFER_ONLY
 
