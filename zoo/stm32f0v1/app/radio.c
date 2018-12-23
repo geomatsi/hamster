@@ -46,7 +46,6 @@ static void spi_init(void)
 	spi_set_nss_high(SPI1);
 	spi_disable_crc(SPI1);
 	spi_fifo_reception_threshold_8bit(SPI1);
-	spi_i2s_mode_spi_mode(SPI1);
 	spi_enable(SPI1);
 }
 
